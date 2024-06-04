@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package halo.entitlements.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+
+service Query {
+  rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/owner";
+  }
+
+  rpc Paused(QueryPaused) returns (QueryPausedResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/paused";
+  }
+
+  rpc PublicCapabilities(QueryPublicCapabilities) returns (QueryPublicCapabilitiesResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/public_capabilities";
+  }
+  rpc PublicCapability(QueryPublicCapability) returns (QueryPublicCapabilityResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/public_capability/{method}";
+  }
+
+  // TODO: Add missing queries.
+}
+
+//
+
+message QueryOwner {}
+
+message QueryOwnerResponse {
+  string owner = 1;
+}
+
+message QueryPaused {}
+
+message QueryPausedResponse {
+  bool paused = 1;
+}
+
+message QueryPublicCapabilities {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryPublicCapabilitiesResponse {
+  map<string, bool> public_capabilities = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryPublicCapability {
+  string method = 1;
+}
+
+message QueryPublicCapabilityResponse {
+  bool enabled = 1;
+}

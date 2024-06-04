@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package halo.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types";
+
+service Query {
+  rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (google.api.http).get = "/halo/v1/owner";
+  }
+
+  rpc Nonces(QueryNonces) returns (QueryNoncesResponse) {
+    option (google.api.http).get = "/halo/v1/nonces";
+  }
+
+  rpc Nonce(QueryNonce) returns (QueryNonceResponse) {
+    option (google.api.http).get = "/halo/v1/nonce/{address}";
+  }
+}
+
+//
+
+message QueryOwner {}
+
+message QueryOwnerResponse {
+  string owner = 1;
+}
+
+message QueryNonces {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryNoncesResponse {
+  map<string, uint64> nonces = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryNonce {
+  string address = 1;
+}
+
+message QueryNonceResponse {
+  uint64 nonce = 1;
+}

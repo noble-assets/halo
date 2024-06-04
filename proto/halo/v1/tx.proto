@@ -1,0 +1,178 @@
+syntax = "proto3";
+
+package halo.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types";
+
+service Msg {
+  rpc Deposit(halo.v1.MsgDeposit) returns (halo.v1.MsgDepositResponse);
+  rpc DepositFor(halo.v1.MsgDepositFor) returns (halo.v1.MsgDepositResponse);
+  rpc Withdraw(halo.v1.MsgWithdraw) returns (halo.v1.MsgWithdrawResponse);
+  rpc WithdrawTo(halo.v1.MsgWithdrawTo) returns (halo.v1.MsgWithdrawResponse);
+  rpc WithdrawToAdmin(halo.v1.MsgWithdrawToAdmin) returns (halo.v1.MsgWithdrawResponse);
+
+  rpc Burn(halo.v1.MsgBurn) returns (halo.v1.MsgBurnResponse);
+  rpc BurnFor(halo.v1.MsgBurnFor) returns (halo.v1.MsgBurnForResponse);
+  rpc Mint(halo.v1.MsgMint) returns (halo.v1.MsgMintResponse);
+  rpc TradeToFiat(halo.v1.MsgTradeToFiat) returns (halo.v1.MsgTradeToFiatResponse);
+  rpc TransferOwnership(halo.v1.MsgTransferOwnership) returns (halo.v1.MsgTransferOwnershipResponse);
+}
+
+// MsgDeposit implements the deposit (0xb6b55f25) method.
+message MsgDeposit {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgDepositFor implements the depositFor (0x2f4f21e2) method.
+message MsgDepositFor {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string recipient = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgDepositResponse ...
+message MsgDepositResponse {
+  string amount = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgWithdraw implements the withdraw (0x5ebfdfc6) method.
+message MsgWithdraw {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes signature = 3;
+}
+
+// MsgWithdrawTo implements the withdrawTo (0xc2930c45) method.
+message MsgWithdrawTo {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string recipient = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes signature = 4;
+}
+
+// MsgWithdrawToAdmin implements the withdrawToAdminOnly method.
+message MsgWithdrawToAdmin {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string from = 2;
+  string recipient = 3;
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgWithdrawResponse ...
+message MsgWithdrawResponse {
+  string amount = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgBurn implements the burn (0x42966c68) method.
+message MsgBurn {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgBurnResponse ...
+message MsgBurnResponse {}
+
+// MsgBurnFor implements the burnFor (0x1dd319cb) method.
+message MsgBurnFor {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string from = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgBurnForResponse ...
+message MsgBurnForResponse {}
+
+// MsgMint implements the mint (0x40c10f19) method.
+message MsgMint {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string to = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgMintResponse ...
+message MsgMintResponse {}
+
+// MsgTradeToFiat implements the tradeToFiat (0x4cdbb826) method.
+message MsgTradeToFiat {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string recipient = 3;
+}
+
+// MsgTradeToFiatResponse ...
+message MsgTradeToFiatResponse {}
+
+// MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
+message MsgTransferOwnership {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string new_owner = 2;
+}
+
+// MsgTransferOwnershipResponse ...
+message MsgTransferOwnershipResponse {}

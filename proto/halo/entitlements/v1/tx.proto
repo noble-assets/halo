@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package halo.entitlements.v1;
+
+import "gogoproto/gogo.proto";
+import "halo/entitlements/v1/entitlements.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+
+service Msg {
+  rpc SetPublicCapability(MsgSetPublicCapability) returns (MsgSetPublicCapabilityResponse);
+  rpc SetRoleCapability(MsgSetRoleCapability) returns (MsgSetRoleCapabilityResponse);
+  rpc SetUserRole(MsgSetUserRole) returns (MsgSetUserRoleResponse);
+
+  rpc Pause(MsgPause) returns (MsgPauseResponse);
+  rpc Unpause(MsgUnpause) returns (MsgUnpauseResponse);
+  rpc TransferOwnership(MsgTransferOwnership) returns (MsgTransferOwnershipResponse);
+}
+
+// MsgSetPublicCapability implements the setPublicCapability (0xc6b0263e) method.
+message MsgSetPublicCapability {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string method = 2;
+  bool enabled = 3;
+}
+
+// MsgSetPublicCapabilityResponse ...
+message MsgSetPublicCapabilityResponse {}
+
+// MsgSetRoleCapability implements the setRoleCapability (0x7d40583d) method.
+message MsgSetRoleCapability {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  Role role = 2;
+  string method = 3;
+  bool enabled = 4;
+}
+
+// MsgSetRoleCapabilityResponse ...
+message MsgSetRoleCapabilityResponse {}
+
+// MsgSetUserRole implements the setUserRole (0x67aff484) method.
+message MsgSetUserRole {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string user = 2;
+  Role role = 3;
+  bool enabled = 4;
+}
+
+// MsgSetUserRoleResponse ...
+message MsgSetUserRoleResponse {}
+
+// MsgPause implements the pause (0x8456cb59) method.
+message MsgPause {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+}
+
+// MsgPauseResponse ...
+message MsgPauseResponse {}
+
+// MsgUnpause implements the unpause (0x3f4ba83a) method.
+message MsgUnpause {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+}
+
+// MsgUnpauseResponse ...
+message MsgUnpauseResponse {}
+
+// MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
+message MsgTransferOwnership {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string new_owner = 2;
+}
+
+// MsgTransferOwnershipResponse ...
+message MsgTransferOwnershipResponse {}

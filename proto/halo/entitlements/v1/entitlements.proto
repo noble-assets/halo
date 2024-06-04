@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package halo.entitlements.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+
+enum Role {
+  option (gogoproto.goproto_enum_prefix) = false;
+
+  ROLE_UNSPECIFIED = 0;
+  ROLE_DOMESTIC_FEEDER = 1;
+  ROLE_INTERNATIONAL_FEEDER = 2;
+  ROLE_DOMESTIC_SDYF = 3;
+  ROLE_INTERNATIONAL_SDYF = 4;
+  ROLE_FUND_ADMIN = 5;
+  ROLE_LIQUIDITY_PROVIDER = 6;
+}

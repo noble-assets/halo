@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package halo.aggregator.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
+
+service Query {
+  rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/owner";
+  }
+
+  rpc NextPrice(QueryNextPrice) returns (QueryNextPriceResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/next_price";
+  }
+
+  rpc RoundData(QueryRoundData) returns (QueryRoundDataResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/round_data/{round_id}";
+  }
+  rpc LatestRoundData(QueryLatestRoundData) returns (QueryRoundDataResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/round_data";
+  }
+
+  rpc RoundDetails(QueryRoundDetails) returns (QueryRoundDetailsResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/round_details/{round_id}";
+  }
+  rpc LatestRoundDetails(QueryLatestRoundDetails) returns (QueryRoundDetailsResponse) {
+    option (google.api.http).get = "/halo/aggregator/v1/round_details";
+  }
+}
+
+//
+
+message QueryOwner {}
+
+message QueryOwnerResponse {
+  string owner = 1;
+}
+
+message QueryNextPrice {}
+
+message QueryNextPriceResponse {
+  string next_price = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryRoundData {
+  uint64 round_id = 1;
+}
+
+message QueryLatestRoundData {}
+
+message QueryRoundDataResponse {
+  uint64 round_id = 1;
+  string answer = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 started_at = 3;
+  int64 updated_at = 4;
+  uint64 answered_in_round = 5;
+}
+
+message QueryRoundDetails {
+  uint64 round_id = 1;
+}
+
+message QueryLatestRoundDetails {}
+
+message QueryRoundDetailsResponse {
+  uint64 round_id = 1;
+  string balance = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string interest = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_supply = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 updated_at = 5;
+}

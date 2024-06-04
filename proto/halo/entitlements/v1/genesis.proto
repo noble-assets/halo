@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package halo.entitlements.v1;
+
+import "halo/entitlements/v1/entitlements.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+
+message GenesisState {
+  string owner = 1;
+  bool paused = 2;
+  map<string, bool> public_capabilities = 3;
+  repeated RoleCapability role_capabilities = 4;
+  repeated UserRole user_roles = 5;
+}
+
+//
+
+message RoleCapability {
+  string method = 1;
+  Role role = 2;
+  bool enabled = 3;
+}
+
+message UserRole {
+  string user = 1;
+  Role role = 2;
+  bool enabled = 3;
+}

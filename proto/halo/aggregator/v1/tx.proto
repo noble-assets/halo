@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package halo.aggregator.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
+
+service Msg {
+  rpc ReportBalance(MsgReportBalance) returns (MsgReportBalanceResponse);
+  rpc SetNextPrice(MsgSetNextPrice) returns (MsgSetNextPriceResponse);
+  rpc TransferOwnership(MsgTransferOwnership) returns (MsgTransferOwnershipResponse);
+}
+
+// MsgReportBalance implements the reportBalance (0x0b50ece9) method.
+message MsgReportBalance {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string principal = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string interest = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_supply = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string next_price = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgReportBalanceResponse ...
+message MsgReportBalanceResponse {
+  uint64 round_id = 1;
+}
+
+// MsgSetNextPrice implements the setNextPrice (0xfeca6988) method.
+message MsgSetNextPrice {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string next_price = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgSetNextPriceResponse ...
+message MsgSetNextPriceResponse {}
+
+// MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
+message MsgTransferOwnership {
+  option (gogoproto.equal) = false;
+  option (gogoproto.goproto_getters) = false;
+
+  string signer = 1;
+  string new_owner = 2;
+}
+
+// MsgTransferOwnershipResponse ...
+message MsgTransferOwnershipResponse {}

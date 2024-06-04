@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package halo.aggregator.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
+
+message BalanceReported {
+  uint64 round_id = 1;
+  string balance = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string interest = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string price = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 updated_at = 5;
+}
+
+message NextPriceReported {
+  string price = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message OwnershipTransferred {
+  string previous_owner = 1;
+  string new_owner = 2;
+}

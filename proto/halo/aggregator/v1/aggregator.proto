@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package halo.aggregator.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
+
+message RoundData {
+  string answer = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string balance = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string interest = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string supply = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 updated_at = 5;
+}
