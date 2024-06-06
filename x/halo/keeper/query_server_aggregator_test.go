@@ -47,7 +47,7 @@ func TestNextPriceQuery(t *testing.T) {
 	res, err := server.NextPrice(goCtx, &aggregator.QueryNextPrice{})
 	// ASSERT: The query should've succeeded, and returned nothing.
 	require.NoError(t, err)
-	require.Empty(t, res.NextPrice)
+	require.True(t, res.NextPrice.IsZero())
 
 	// ARRANGE: Set next price in state.
 	// https://etherscan.io/tx/0xfd21979418ce5e6686c624841f48d11ed241b387b08eb60e2bd361de5ed1a061

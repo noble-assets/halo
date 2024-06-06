@@ -45,6 +45,10 @@ func TestReportBalance(t *testing.T) {
 		require.True(t, found)
 	}
 
+	// ASSERT: All rounds can be retrieved.
+	rounds := k.GetRounds(ctx)
+	require.Len(t, rounds, 10)
+
 	// ACT: Attempt to report balance with identical round.
 	msg := data.EthereumRounds[len(data.EthereumRounds)-1].Msg
 	msg.Signer = owner.Address

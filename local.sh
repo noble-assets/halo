@@ -19,8 +19,12 @@ if ! [ -f .halo/data/priv_validator_state.json ]; then
   halod add-genesis-account owner 10000000uusdc --home .halo --keyring-backend test
   AGGREGATOR_OWNER=$(halod keys add aggregator-owner --home .halo --keyring-backend test --output json | jq .address)
   halod add-genesis-account aggregator-owner 10000000uusdc --home .halo --keyring-backend test
+  halod keys add aggregator-pending-owner --home .halo --keyring-backend test &> /dev/null
+  halod add-genesis-account aggregator-pending-owner 10000000uusdc --home .halo --keyring-backend test
   ENTITLEMENTS_OWNER=$(halod keys add entitlements-owner --home .halo --keyring-backend test --output json | jq .address)
   halod add-genesis-account entitlements-owner 10000000uusdc --home .halo --keyring-backend test
+  halod keys add entitlements-pending-owner --home .halo --keyring-backend test &> /dev/null
+  halod add-genesis-account entitlements-pending-owner 10000000uusdc --home .halo --keyring-backend test
 
   TEMP=.halo/genesis.json
   touch $TEMP && jq '.app_state.staking.params.bond_denom = "ustake"' .halo/config/genesis.json > $TEMP && mv $TEMP .halo/config/genesis.json

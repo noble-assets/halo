@@ -9,9 +9,47 @@ import (
 )
 
 func DefaultGenesisState() *GenesisState {
+	// To avoid an import cycle, default role capabilities are set here.
+	var roleCapabilities []entitlements.RoleCapability
+	for i := entitlements.ROLE_DOMESTIC_FEEDER; i <= entitlements.ROLE_INTERNATIONAL_SDYF; i++ {
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  sdk.MsgTypeURL(&MsgBurn{}),
+			Role:    i,
+			Enabled: true,
+		})
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  sdk.MsgTypeURL(&MsgDeposit{}),
+			Role:    i,
+			Enabled: true,
+		})
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  sdk.MsgTypeURL(&MsgDepositFor{}),
+			Role:    i,
+			Enabled: true,
+		})
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  sdk.MsgTypeURL(&MsgWithdraw{}),
+			Role:    i,
+			Enabled: true,
+		})
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  sdk.MsgTypeURL(&MsgWithdrawTo{}),
+			Role:    i,
+			Enabled: true,
+		})
+		roleCapabilities = append(roleCapabilities, entitlements.RoleCapability{
+			Method:  "transfer",
+			Role:    i,
+			Enabled: true,
+		})
+	}
+
+	entitlementsState := entitlements.DefaultGenesisState()
+	entitlementsState.RoleCapabilities = append(entitlementsState.RoleCapabilities, roleCapabilities...)
+
 	return &GenesisState{
 		AggregatorState:   aggregator.DefaultGenesisState(),
-		EntitlementsState: entitlements.DefaultGenesisState(),
+		EntitlementsState: entitlementsState,
 	}
 }
 

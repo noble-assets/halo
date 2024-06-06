@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 
+	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types"
 )
@@ -31,8 +32,8 @@ func (k *Keeper) GetNonce(ctx sdk.Context, address []byte) uint64 {
 }
 
 func (k *Keeper) GetNonces(ctx sdk.Context) map[string]uint64 {
-	store := ctx.KVStore(k.storeKey)
-	itr := sdk.KVStorePrefixIterator(store, types.NoncePrefix)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.NoncePrefix)
+	itr := store.Iterator(nil, nil)
 
 	defer itr.Close()
 

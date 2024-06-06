@@ -8,9 +8,9 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/noble-assets/halo/x/halo"
 	"github.com/noble-assets/halo/x/halo/keeper"
 	"github.com/noble-assets/halo/x/halo/types"
-	"github.com/noble-assets/halo/x/halo/types/entitlements"
 )
 
 func HaloKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -44,16 +44,7 @@ func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper)
 	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)
 	k.SetBankKeeper(bank)
 
-	for i := 1; i <= int(entitlements.ROLE_INTERNATIONAL_SDYF); i++ {
-		role := entitlements.Role(i)
-
-		k.SetRoleCapability(ctx, sdk.MsgTypeURL(&types.MsgBurn{}), role, true)
-		k.SetRoleCapability(ctx, sdk.MsgTypeURL(&types.MsgDeposit{}), role, true)
-		k.SetRoleCapability(ctx, sdk.MsgTypeURL(&types.MsgDepositFor{}), role, true)
-		k.SetRoleCapability(ctx, sdk.MsgTypeURL(&types.MsgWithdraw{}), role, true)
-		k.SetRoleCapability(ctx, sdk.MsgTypeURL(&types.MsgWithdrawTo{}), role, true)
-		k.SetRoleCapability(ctx, "transfer", role, true)
-	}
+	halo.InitGenesis(ctx, k, *types.DefaultGenesisState())
 
 	return k, ctx
 }

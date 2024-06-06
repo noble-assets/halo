@@ -90,7 +90,7 @@ func (k *Keeper) VerifyWithdrawSignature(ctx sdk.Context, recipient sdk.AccAddre
 		return false
 	}
 
-	return account.GetPubKey().VerifySignature(signature, bz)
+	return account.GetPubKey().VerifySignature(bz, signature)
 }
 
 // burnCoins is an internal helper function to burn.
@@ -101,7 +101,7 @@ func (k *Keeper) burnCoins(ctx sdk.Context, sender sdk.AccAddress, coins sdk.Coi
 	}
 	err = k.bankKeeper.BurnCoins(ctx, types.ModuleName, coins)
 	if err != nil {
-		return sdkerrors.Wrap(err, "unable to from from module")
+		return sdkerrors.Wrap(err, "unable to burn from module")
 	}
 
 	return nil
