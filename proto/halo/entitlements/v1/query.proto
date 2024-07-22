@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package halo.entitlements.v1;
 
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
+import "halo/entitlements/v1/entitlements.proto";
 
 option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
 
@@ -16,14 +16,17 @@ service Query {
     option (google.api.http).get = "/halo/entitlements/v1/paused";
   }
 
-  rpc PublicCapabilities(QueryPublicCapabilities) returns (QueryPublicCapabilitiesResponse) {
-    option (google.api.http).get = "/halo/entitlements/v1/public_capabilities";
-  }
   rpc PublicCapability(QueryPublicCapability) returns (QueryPublicCapabilityResponse) {
     option (google.api.http).get = "/halo/entitlements/v1/public_capability/{method}";
   }
 
-  // TODO: Add missing queries.
+  rpc RoleCapability(QueryRoleCapability) returns (QueryRoleCapabilityResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/role_capability/{method}";
+  }
+
+  rpc UserCapability(QueryUserCapability) returns (QueryUserCapabilityResponse) {
+    option (google.api.http).get = "/halo/entitlements/v1/user_capability/{address}";
+  }
 }
 
 //
@@ -40,19 +43,26 @@ message QueryPausedResponse {
   bool paused = 1;
 }
 
-message QueryPublicCapabilities {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
-}
-
-message QueryPublicCapabilitiesResponse {
-  map<string, bool> public_capabilities = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
 message QueryPublicCapability {
   string method = 1;
 }
 
 message QueryPublicCapabilityResponse {
   bool enabled = 1;
+}
+
+message QueryRoleCapability {
+  string method = 1;
+}
+
+message QueryRoleCapabilityResponse {
+  repeated Role roles = 1;
+}
+
+message QueryUserCapability {
+  string address = 1;
+}
+
+message QueryUserCapabilityResponse {
+  repeated Role roles = 1;
 }

@@ -3,10 +3,8 @@ package keeper
 import (
 	"context"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/noble-assets/halo/x/halo/types/entitlements"
 )
 
@@ -44,30 +42,6 @@ func (k entitlementsQueryServer) Paused(goCtx context.Context, req *entitlements
 	}, nil
 }
 
-func (k entitlementsQueryServer) PublicCapabilities(goCtx context.Context, req *entitlements.QueryPublicCapabilities) (*entitlements.QueryPublicCapabilitiesResponse, error) {
-	if req == nil {
-		return nil, errors.ErrInvalidRequest
-	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), entitlements.PublicPrefix)
-
-	publicCapabilities := make(map[string]bool)
-	pagination, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-		if len(value) == 1 && value[0] == 1 {
-			publicCapabilities[string(key)] = true
-		} else {
-			publicCapabilities[string(key)] = false
-		}
-		return nil
-	})
-
-	return &entitlements.QueryPublicCapabilitiesResponse{
-		PublicCapabilities: publicCapabilities,
-		Pagination:         pagination,
-	}, err
-}
-
 func (k entitlementsQueryServer) PublicCapability(goCtx context.Context, req *entitlements.QueryPublicCapability) (*entitlements.QueryPublicCapabilityResponse, error) {
 	if req == nil || req.Method == "" {
 		return nil, errors.ErrInvalidRequest
@@ -77,5 +51,34 @@ func (k entitlementsQueryServer) PublicCapability(goCtx context.Context, req *en
 
 	return &entitlements.QueryPublicCapabilityResponse{
 		Enabled: k.IsPublicCapability(ctx, req.Method),
+	}, nil
+}
+
+func (k entitlementsQueryServer) RoleCapability(goCtx context.Context, req *entitlements.QueryRoleCapability) (*entitlements.QueryRoleCapabilityResponse, error) {
+	if req == nil || req.Method == "" {
+		return nil, errors.ErrInvalidRequest
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	return &entitlements.QueryRoleCapabilityResponse{
+		Roles: k.GetCapabilityRoles(ctx, req.Method),
+	}, nil
+}
+
+func (k entitlementsQueryServer) UserCapability(goCtx context.Context, req *entitlements.QueryUserCapability) (*entitlements.QueryUserCapabilityResponse, error) {
+	if req == nil {
+		return nil, errors.ErrInvalidRequest
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	address, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to decode address %s", req.Address)
+	}
+
+	return &entitlements.QueryUserCapabilityResponse{
+		Roles: k.GetUserRoles(ctx, address),
 	}, nil
 }

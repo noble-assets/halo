@@ -7,7 +7,7 @@ const SubmoduleName = "halo-entitlements"
 var (
 	OwnerKey         = []byte("entitlements/owner")
 	PausedKey        = []byte("entitlements/paused")
-	PublicPrefix     = []byte("entitlements/public")
+	PublicPrefix     = []byte("entitlements/public/")
 	CapabilityPrefix = []byte("entitlements/capability/")
 	UserPrefix       = []byte("entitlements/user/")
 )

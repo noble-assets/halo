@@ -12,7 +12,7 @@ message GenesisState {
   bool paused = 2;
   map<string, bool> public_capabilities = 3;
   repeated RoleCapability role_capabilities = 4 [(gogoproto.nullable) = false];
-  repeated UserRole user_roles = 5;
+  repeated UserRole user_roles = 5 [(gogoproto.nullable) = false];
 }
 
 //

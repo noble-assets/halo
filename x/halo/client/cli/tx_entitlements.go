@@ -20,7 +20,8 @@ func GetEntitlementsTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	// TODO: Add missing commands.
+	cmd.AddCommand(TxSetPublicCapability())
+	cmd.AddCommand(TxSetRoleCapability())
 	cmd.AddCommand(TxSetUserRole())
 
 	cmd.AddCommand(TxPause())
@@ -30,10 +31,85 @@ func GetEntitlementsTxCmd() *cobra.Command {
 	return cmd
 }
 
+func TxSetPublicCapability() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-public-capability [method] [enabled]",
+		Short: "Enable or disable a specific public method",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			enabled, _ := strconv.ParseBool(args[1])
+
+			msg := &entitlements.MsgSetPublicCapability{
+				Signer:  clientCtx.GetFromAddress().String(),
+				Method:  args[0],
+				Enabled: enabled,
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func TxSetRoleCapability() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-role-capability [role] [method] [enabled]",
+		Short: "Enable or disable a specific method for a role",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			var role entitlements.Role
+			switch args[0] {
+			case "domestic-feeder":
+				role = entitlements.ROLE_DOMESTIC_FEEDER
+			case "international-feeder":
+				role = entitlements.ROLE_INTERNATIONAL_FEEDER
+			case "domestic-sdyf":
+				role = entitlements.ROLE_DOMESTIC_SDYF
+			case "international-sdyf":
+				role = entitlements.ROLE_INTERNATIONAL_SDYF
+			case "fund-admin":
+				role = entitlements.ROLE_FUND_ADMIN
+			case "liquidity-provider":
+				role = entitlements.ROLE_LIQUIDITY_PROVIDER
+			default:
+				return fmt.Errorf("unknown role: %s", args[0])
+			}
+
+			enabled, _ := strconv.ParseBool(args[2])
+
+			msg := &entitlements.MsgSetRoleCapability{
+				Signer:  clientCtx.GetFromAddress().String(),
+				Role:    role,
+				Method:  args[1],
+				Enabled: enabled,
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
 func TxSetUserRole() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-user-role [user] [role] [enabled]",
-		Short: "Transaction that pauses the submodule",
+		Short: "Enable or disable a specific role for a user",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
@@ -43,9 +119,18 @@ func TxSetUserRole() *cobra.Command {
 
 			var role entitlements.Role
 			switch args[1] {
+			case "domestic-feeder":
+				role = entitlements.ROLE_DOMESTIC_FEEDER
+			case "international-feeder":
+				role = entitlements.ROLE_INTERNATIONAL_FEEDER
+			case "domestic-sdyf":
+				role = entitlements.ROLE_DOMESTIC_SDYF
+			case "international-sdyf":
+				role = entitlements.ROLE_INTERNATIONAL_SDYF
 			case "fund-admin":
 				role = entitlements.ROLE_FUND_ADMIN
-			// TODO: More roles
+			case "liquidity-provider":
+				role = entitlements.ROLE_LIQUIDITY_PROVIDER
 			default:
 				return fmt.Errorf("unknown role: %s", args[1])
 			}

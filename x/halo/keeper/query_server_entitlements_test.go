@@ -59,38 +59,6 @@ func TestPausedQuery(t *testing.T) {
 	require.True(t, res.Paused)
 }
 
-func TestPublicCapabilitiesQuery(t *testing.T) {
-	// NOTE: Query pagination is assumed working, so isn't testing here.
-
-	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
-	server := keeper.NewEntitlementsQueryServer(k)
-
-	// ACT: Attempt to query public capabilities with invalid request.
-	_, err := server.PublicCapabilities(goCtx, nil)
-	// ASSERT: The query should've failed due to invalid request.
-	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
-
-	// ACT: Attempt to query public capabilities with no state.
-	res, err := server.PublicCapabilities(goCtx, &entitlements.QueryPublicCapabilities{})
-	// ASSERT: The query should've succeeded, with empty public capabilities.
-	require.NoError(t, err)
-	require.Empty(t, res.PublicCapabilities)
-
-	// ARRANGE: Set public capabilities in state.
-	// NOTE: Depositing will never be public, this is just for testing.
-	k.SetPublicCapability(ctx, "transfer", false)
-	k.SetPublicCapability(ctx, "/halo.v1.MsgDeposit", true)
-
-	// ACT: Attempt to query public capabilities with state.
-	res, err = server.PublicCapabilities(goCtx, &entitlements.QueryPublicCapabilities{})
-	// ASSERT: The query should've succeeded, with public capabilities.
-	require.NoError(t, err)
-	require.Len(t, res.PublicCapabilities, 2)
-	require.False(t, res.PublicCapabilities["transfer"])
-	require.True(t, res.PublicCapabilities["/halo.v1.MsgDeposit"])
-}
-
 func TestPublicCapabilityQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
 	goCtx := sdk.WrapSDKContext(ctx)

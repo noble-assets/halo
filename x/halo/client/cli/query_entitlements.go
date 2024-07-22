@@ -20,8 +20,8 @@ func GetEntitlementsQueryCmd() *cobra.Command {
 
 	cmd.AddCommand(QueryEntitlementsOwner())
 	cmd.AddCommand(QueryPaused())
-	cmd.AddCommand(QueryPublicCapabilities())
 	cmd.AddCommand(QueryPublicCapability())
+	cmd.AddCommand(QueryRoleCapability())
 
 	return cmd
 }
@@ -72,37 +72,6 @@ func QueryPaused() *cobra.Command {
 	return cmd
 }
 
-func QueryPublicCapabilities() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "public-capabilities",
-		Short: "Query for all public capabilities",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
-			queryClient := entitlements.NewQueryClient(clientCtx)
-
-			pagination, err := client.ReadPageRequest(cmd.Flags())
-			if err != nil {
-				return err
-			}
-
-			res, err := queryClient.PublicCapabilities(context.Background(), &entitlements.QueryPublicCapabilities{
-				Pagination: pagination,
-			})
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "public capabilities")
-
-	return cmd
-}
-
 func QueryPublicCapability() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "public-capability [method]",
@@ -114,6 +83,56 @@ func QueryPublicCapability() *cobra.Command {
 
 			res, err := queryClient.PublicCapability(context.Background(), &entitlements.QueryPublicCapability{
 				Method: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func QueryRoleCapability() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "role-capability [method]",
+		Short: "Query roles for a specific method",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			queryClient := entitlements.NewQueryClient(clientCtx)
+
+			res, err := queryClient.RoleCapability(context.Background(), &entitlements.QueryRoleCapability{
+				Method: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+func QueryUserCapability() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "user-capability [address]",
+		Short: "Query roles for a specific address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			queryClient := entitlements.NewQueryClient(clientCtx)
+
+			res, err := queryClient.UserCapability(context.Background(), &entitlements.QueryUserCapability{
+				Address: args[0],
 			})
 			if err != nil {
 				return err

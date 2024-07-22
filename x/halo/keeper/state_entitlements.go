@@ -71,6 +71,24 @@ func (k *Keeper) IsPublicCapability(ctx sdk.Context, method string) bool {
 	}
 }
 
+func (k *Keeper) GetPublicCapabilities(ctx sdk.Context) (publicCapabilities map[string]bool) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), entitlements.PublicPrefix)
+	itr := store.Iterator(nil, nil)
+
+	defer itr.Close()
+
+	for ; itr.Valid(); itr.Next() {
+		enabled := false
+		if len(itr.Value()) == 1 && itr.Value()[0] == 1 {
+			enabled = true
+		}
+
+		publicCapabilities[string(itr.Key())] = enabled
+	}
+
+	return
+}
+
 func (k *Keeper) SetPublicCapability(ctx sdk.Context, method string, enabled bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := entitlements.PublicKey(method)
@@ -101,6 +119,28 @@ func (k *Keeper) GetCapabilityRoles(ctx sdk.Context, method string) (roles []ent
 	return
 }
 
+func (k *Keeper) GetAllCapabilityRoles(ctx sdk.Context) (capabilityRoles []entitlements.RoleCapability) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), entitlements.CapabilityPrefix)
+	itr := store.Iterator(nil, nil)
+
+	defer itr.Close()
+
+	for ; itr.Valid(); itr.Next() {
+		enabled := false
+		if len(itr.Value()) == 1 && itr.Value()[0] == 1 {
+			enabled = true
+		}
+
+		capabilityRoles = append(capabilityRoles, entitlements.RoleCapability{
+			Method:  string(itr.Key()[:len(itr.Key())-8]),
+			Role:    entitlements.Role(binary.BigEndian.Uint64(itr.Key()[len(itr.Key())-8:])),
+			Enabled: enabled,
+		})
+	}
+
+	return
+}
+
 func (k *Keeper) SetRoleCapability(ctx sdk.Context, method string, role entitlements.Role, enabled bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := entitlements.CapabilityRoleKey(method, role)
@@ -126,6 +166,28 @@ func (k *Keeper) GetUserRoles(ctx sdk.Context, user []byte) (roles []entitlement
 		if role != entitlements.ROLE_UNSPECIFIED && enabled {
 			roles = append(roles, role)
 		}
+	}
+
+	return
+}
+
+func (k *Keeper) GetAllUserRoles(ctx sdk.Context) (userRoles []entitlements.UserRole) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), entitlements.UserPrefix)
+	itr := store.Iterator(nil, nil)
+
+	defer itr.Close()
+
+	for ; itr.Valid(); itr.Next() {
+		enabled := false
+		if len(itr.Value()) == 1 && itr.Value()[0] == 1 {
+			enabled = true
+		}
+
+		userRoles = append(userRoles, entitlements.UserRole{
+			User:    sdk.AccAddress(itr.Key()[:len(itr.Key())-8]).String(),
+			Role:    entitlements.Role(binary.BigEndian.Uint64(itr.Key()[len(itr.Key())-8:])),
+			Enabled: enabled,
+		})
 	}
 
 	return

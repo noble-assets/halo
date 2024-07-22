@@ -44,9 +44,11 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 			Rounds:      k.GetRounds(ctx),
 		},
 		EntitlementsState: entitlements.GenesisState{
-			Owner:  k.GetEntitlementsOwner(ctx),
-			Paused: k.GetPaused(ctx),
-			// TODO
+			Owner:              k.GetEntitlementsOwner(ctx),
+			Paused:             k.GetPaused(ctx),
+			PublicCapabilities: k.GetPublicCapabilities(ctx),
+			RoleCapabilities:   k.GetAllCapabilityRoles(ctx),
+			UserRoles:          k.GetAllUserRoles(ctx),
 		},
 		Owner:  k.GetOwner(ctx),
 		Nonces: k.GetNonces(ctx),
