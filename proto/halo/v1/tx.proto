@@ -7,17 +7,17 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/noble-assets/halo/x/halo/types";
 
 service Msg {
-  rpc Deposit(halo.v1.MsgDeposit) returns (halo.v1.MsgDepositResponse);
-  rpc DepositFor(halo.v1.MsgDepositFor) returns (halo.v1.MsgDepositResponse);
-  rpc Withdraw(halo.v1.MsgWithdraw) returns (halo.v1.MsgWithdrawResponse);
-  rpc WithdrawTo(halo.v1.MsgWithdrawTo) returns (halo.v1.MsgWithdrawResponse);
-  rpc WithdrawToAdmin(halo.v1.MsgWithdrawToAdmin) returns (halo.v1.MsgWithdrawResponse);
+  rpc Deposit(MsgDeposit) returns (MsgDepositResponse);
+  rpc DepositFor(MsgDepositFor) returns (MsgDepositResponse);
+  rpc Withdraw(MsgWithdraw) returns (MsgWithdrawResponse);
+  rpc WithdrawTo(MsgWithdrawTo) returns (MsgWithdrawResponse);
+  rpc WithdrawToAdmin(MsgWithdrawToAdmin) returns (MsgWithdrawResponse);
 
-  rpc Burn(halo.v1.MsgBurn) returns (halo.v1.MsgBurnResponse);
-  rpc BurnFor(halo.v1.MsgBurnFor) returns (halo.v1.MsgBurnForResponse);
-  rpc Mint(halo.v1.MsgMint) returns (halo.v1.MsgMintResponse);
-  rpc TradeToFiat(halo.v1.MsgTradeToFiat) returns (halo.v1.MsgTradeToFiatResponse);
-  rpc TransferOwnership(halo.v1.MsgTransferOwnership) returns (halo.v1.MsgTransferOwnershipResponse);
+  rpc Burn(MsgBurn) returns (MsgBurnResponse);
+  rpc BurnFor(MsgBurnFor) returns (MsgBurnForResponse);
+  rpc Mint(MsgMint) returns (MsgMintResponse);
+  rpc TradeToFiat(MsgTradeToFiat) returns (MsgTradeToFiatResponse);
+  rpc TransferOwnership(MsgTransferOwnership) returns (MsgTransferOwnershipResponse);
 }
 
 // MsgDeposit implements the deposit (0xb6b55f25) method.
