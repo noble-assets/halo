@@ -21,6 +21,7 @@ type Keeper struct {
 
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
+	ftfKeeper     types.FiatTokenFactoryKeeper
 }
 
 func NewKeeper(
@@ -30,6 +31,7 @@ func NewKeeper(
 	underlying string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	ftfKeeper types.FiatTokenFactoryKeeper,
 ) *Keeper {
 	return &Keeper{
 		cdc:      cdc,
@@ -40,6 +42,7 @@ func NewKeeper(
 
 		accountKeeper: accountKeeper,
 		bankKeeper:    bankKeeper,
+		ftfKeeper:     ftfKeeper,
 	}
 }
 
@@ -48,8 +51,28 @@ func (k *Keeper) SetBankKeeper(bankKeeper types.BankKeeper) {
 	k.bankKeeper = bankKeeper
 }
 
+// SetFTFKeeper overwrites the fiattokenfactory keeper used in this module.
+func (k *Keeper) SetFTFKeeper(ftfKeeper types.FiatTokenFactoryKeeper) {
+	k.ftfKeeper = ftfKeeper
+}
+
 // SendRestrictionFn executes necessary checks against all USYC transfers.
 func (k *Keeper) SendRestrictionFn(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) (newToAddr sdk.AccAddress, err error) {
+	denom := k.ftfKeeper.GetMintingDenom(ctx).Denom
+	if amount := amt.AmountOf(denom); !amount.IsZero() {
+		if k.ftfKeeper.GetPaused(ctx).Paused {
+			return toAddr, fmt.Errorf("%s transfers are paused", denom)
+		}
+
+		if _, found := k.ftfKeeper.GetBlacklisted(ctx, fromAddr); found {
+			return toAddr, fmt.Errorf("%s is blocked from sending %s", fromAddr.String(), denom)
+		}
+
+		if _, found := k.ftfKeeper.GetBlacklisted(ctx, toAddr); found {
+			return toAddr, fmt.Errorf("%s is blocked from receiving %s", toAddr.String(), denom)
+		}
+	}
+
 	if amount := amt.AmountOf(k.Denom); !amount.IsZero() {
 		burning := !fromAddr.Equals(types.ModuleAddress) && toAddr.Equals(types.ModuleAddress)
 		minting := fromAddr.Equals(types.ModuleAddress) && !toAddr.Equals(types.ModuleAddress)
