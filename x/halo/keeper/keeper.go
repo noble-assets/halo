@@ -123,7 +123,11 @@ func (k *Keeper) mintCoins(ctx sdk.Context, recipient sdk.AccAddress, coins sdk.
 
 // depositFor is an internal helper function to deposit.
 func (k *Keeper) depositFor(ctx sdk.Context, signer sdk.AccAddress, recipient sdk.AccAddress, underlying sdk.Int) (amount sdk.Int, err error) {
-	round, _ := k.GetRound(ctx, k.GetLastRoundId(ctx))
+	lastRoundId := k.GetLastRoundId(ctx)
+	round, found := k.GetRound(ctx, lastRoundId)
+	if !found {
+		return sdk.Int{}, fmt.Errorf("round %d not found", lastRoundId)
+	}
 	amount = underlying.QuoRaw(10000).MulRaw(10000)
 	amount = amount.MulRaw(100000000).Quo(round.Answer)
 
@@ -147,7 +151,11 @@ func (k *Keeper) depositFor(ctx sdk.Context, signer sdk.AccAddress, recipient sd
 
 // withdrawTo is an internal helper function to withdraw.
 func (k *Keeper) withdrawTo(ctx sdk.Context, signer sdk.AccAddress, recipient sdk.AccAddress, amount sdk.Int) (underlying sdk.Int, err error) {
-	round, _ := k.GetRound(ctx, k.GetLastRoundId(ctx))
+	lastRoundId := k.GetLastRoundId(ctx)
+	round, found := k.GetRound(ctx, lastRoundId)
+	if !found {
+		return sdk.Int{}, fmt.Errorf("round %d not found", lastRoundId)
+	}
 	underlying = amount.Mul(round.Answer).QuoRaw(100000000)
 	underlying = underlying.QuoRaw(10000).MulRaw(10000)
 
