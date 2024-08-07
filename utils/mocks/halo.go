@@ -20,10 +20,13 @@ func HaloKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		BankKeeper{
 			Restriction: NoOpSendRestrictionFn,
 		},
+		FTFKeeper{
+			Paused: false,
+		},
 	)
 }
 
-func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper) (*keeper.Keeper, sdk.Context) {
+func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper, ftf FTFKeeper) (*keeper.Keeper, sdk.Context) {
 	key := storetypes.NewKVStoreKey(types.ModuleName)
 	tkey := storetypes.NewTransientStoreKey("transient_halo")
 	ctx := testutil.DefaultContext(key, tkey)
@@ -39,6 +42,7 @@ func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper)
 		"uusdc",
 		account,
 		nil,
+		ftf,
 	)
 
 	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)
