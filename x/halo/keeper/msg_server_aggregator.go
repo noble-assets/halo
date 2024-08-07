@@ -48,7 +48,7 @@ func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregato
 	}
 	k.SetRound(ctx, id, round)
 
-	if msg.NextPrice.IsZero() || msg.NextPrice.LTE(answer) {
+	if !msg.NextPrice.IsPositive() || msg.NextPrice.LTE(answer) {
 		return nil, aggregator.ErrInvalidNextPrice
 	}
 	k.Keeper.SetNextPrice(ctx, msg.NextPrice)
