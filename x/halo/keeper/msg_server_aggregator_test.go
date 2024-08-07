@@ -56,6 +56,18 @@ func TestReportBalance(t *testing.T) {
 	// ASSERT: The action should've failed due to identical round.
 	require.ErrorContains(t, err, aggregator.ErrAlreadyReported.Error())
 
+	// ACT: Attempt to report balance with a negative next price.
+	msg = aggregator.MsgReportBalance{
+		Signer:      owner.Address,
+		Principal:   utils.MustParseInt("4600092531"),
+		Interest:    utils.MustParseInt("658502"),
+		TotalSupply: utils.MustParseInt("44285046691709"),
+		NextPrice:   utils.MustParseInt("-1"),
+	}
+	_, err = server.ReportBalance(goCtx, &msg)
+	// ASSERT: The action should've failed due to invalid next price.
+	require.ErrorContains(t, err, aggregator.ErrInvalidNextPrice.Error())
+
 	// ACT: Attempt to report balance with invalid next price.
 	// https://etherscan.io/tx/0xe8154863cf89175c9ec361999ec7ddeebf7c29297ee62325f777067409071303
 	msg = aggregator.MsgReportBalance{

@@ -141,6 +141,15 @@ func TestDepositFor(t *testing.T) {
 	// ARRANGE: Assign the international feeder role to recipient.
 	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
+	// ACT: Attempt to deposit for with non-existing round.
+	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+		Signer:    user.Address,
+		Recipient: recipient.Address,
+		Amount:    amount,
+	})
+	// ASSERT: The action should've failed due to non-existing round.
+	require.ErrorContains(t, err, "round 0 not found")
+
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
 	k.SetRound(ctx, 229, aggregator.RoundData{
@@ -402,6 +411,17 @@ func TestWithdrawTo(t *testing.T) {
 
 	// ARRANGE: Set user withdrawal nonce in state.
 	k.SetNonce(ctx, recipient.Bytes, 10)
+
+	// ACT: Attempt to withdraw to with non-existing last round.
+	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+		Signer:    user.Address,
+		Recipient: recipient.Address,
+		Amount:    amount,
+		Signature: signature,
+	})
+	// ASSERT: The action should've failed due to non-existing last round.
+	require.ErrorContains(t, err, "round 0 not found")
+
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
 	k.SetRound(ctx, 139, aggregator.RoundData{
@@ -412,6 +432,9 @@ func TestWithdrawTo(t *testing.T) {
 		UpdatedAt: 1706011979,
 	})
 	k.SetLastRoundId(ctx, 139)
+
+	// ARRANGE: Set user withdrawal nonce in state.
+	k.SetNonce(ctx, recipient.Bytes, 10)
 
 	// ACT: Attempt to withdraw to with insufficient funds.
 	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
