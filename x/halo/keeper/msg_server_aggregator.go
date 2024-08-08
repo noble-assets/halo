@@ -74,7 +74,7 @@ func (k aggregatorMsgServer) SetNextPrice(goCtx context.Context, msg *aggregator
 		return nil, err
 	}
 
-	if msg.NextPrice.IsZero() {
+	if !msg.NextPrice.IsPositive() {
 		return nil, aggregator.ErrInvalidNextPrice
 	}
 
