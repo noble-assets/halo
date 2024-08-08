@@ -9,4 +9,5 @@ var (
 	ErrInvalidOwner = errors.Register(Codespace, 2, "signer is not owner")
 	ErrSameOwner    = errors.Register(Codespace, 3, "provided owner is the current owner")
 	ErrUnauthorized = errors.Register(Codespace, 4, "unauthorized")
+	ErrInvalidRole  = errors.Register(Codespace, 5, "invalid role")
 )

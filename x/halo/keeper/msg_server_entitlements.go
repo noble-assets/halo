@@ -40,6 +40,11 @@ func (k entitlementsMsgServer) SetRoleCapability(goCtx context.Context, msg *ent
 		return nil, err
 	}
 
+	_, roleExists := entitlements.Role_value[msg.Role.String()]
+	if !roleExists {
+		return nil, errors.Wrapf(entitlements.ErrInvalidRole, "role %s does not exist", msg.Role)
+	}
+
 	k.Keeper.SetRoleCapability(ctx, msg.Method, msg.Role, msg.Enabled)
 
 	return &entitlements.MsgSetRoleCapabilityResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.RoleCapabilityUpdated{
@@ -59,6 +64,11 @@ func (k entitlementsMsgServer) SetUserRole(goCtx context.Context, msg *entitleme
 	user, err := sdk.AccAddressFromBech32(msg.User)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode user address %s", msg.User)
+	}
+
+	_, roleExists := entitlements.Role_value[msg.Role.String()]
+	if !roleExists {
+		return nil, errors.Wrapf(entitlements.ErrInvalidRole, "role %s does not exist", msg.Role)
 	}
 
 	k.Keeper.SetUserRole(ctx, user, msg.Role, msg.Enabled)
