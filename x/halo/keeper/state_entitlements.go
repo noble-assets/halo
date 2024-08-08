@@ -72,6 +72,7 @@ func (k *Keeper) IsPublicCapability(ctx sdk.Context, method string) bool {
 }
 
 func (k *Keeper) GetPublicCapabilities(ctx sdk.Context) (publicCapabilities map[string]bool) {
+	publicCapabilities = make(map[string]bool)
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), entitlements.PublicPrefix)
 	itr := store.Iterator(nil, nil)
 
