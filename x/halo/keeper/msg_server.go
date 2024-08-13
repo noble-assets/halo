@@ -32,6 +32,9 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 	if !k.CanCall(ctx, signer, method) {
 		return nil, fmt.Errorf("%s cannot execute %s", msg.Signer, method)
 	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
+	}
 
 	amount, err := k.depositFor(ctx, signer, signer, msg.Amount)
 	return &types.MsgDepositResponse{Amount: amount}, err
@@ -57,6 +60,9 @@ func (k msgServer) DepositFor(goCtx context.Context, msg *types.MsgDepositFor) (
 			return nil, fmt.Errorf("%s cannot receive %s", msg.Recipient, k.Denom)
 		}
 	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
+	}
 
 	amount, err := k.depositFor(ctx, signer, recipient, msg.Amount)
 	return &types.MsgDepositResponse{Amount: amount}, err
@@ -72,6 +78,9 @@ func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*typ
 	}
 	if !k.CanCall(ctx, signer, method) {
 		return nil, fmt.Errorf("%s cannot execute %s", msg.Signer, method)
+	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
 	}
 
 	if !k.VerifyWithdrawSignature(ctx, signer, msg.Amount, msg.Signature) {
@@ -101,6 +110,9 @@ func (k msgServer) WithdrawTo(goCtx context.Context, msg *types.MsgWithdrawTo) (
 		if !k.CanCall(ctx, recipient, "transfer") {
 			return nil, fmt.Errorf("%s cannot receive %s", msg.Recipient, k.Denom)
 		}
+	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
 	}
 
 	if !k.VerifyWithdrawSignature(ctx, recipient, msg.Amount, msg.Signature) {
@@ -145,7 +157,9 @@ func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBu
 	if !k.CanCall(ctx, signer, method) {
 		return nil, fmt.Errorf("%s cannot execute %s", msg.Signer, method)
 	}
-
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
+	}
 	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, msg.Amount))
 	err = k.burnCoins(ctx, signer, coins)
 
@@ -165,6 +179,9 @@ func (k msgServer) BurnFor(goCtx context.Context, msg *types.MsgBurnFor) (*types
 	from, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode from address %s", msg.From)
+	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
 	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, msg.Amount))
@@ -190,6 +207,9 @@ func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMi
 	if !k.CanCall(ctx, to, "transfer") {
 		return nil, fmt.Errorf("%s cannot transfer %s", msg.To, k.Denom)
 	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
+	}
 
 	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, msg.Amount))
 	err = k.mintCoins(ctx, to, coins)
@@ -213,6 +233,9 @@ func (k msgServer) TradeToFiat(goCtx context.Context, msg *types.MsgTradeToFiat)
 	}
 	if !k.HasRole(ctx, signer, entitlements.ROLE_LIQUIDITY_PROVIDER) {
 		return nil, types.ErrInvalidLiquidityProvider
+	}
+	if !msg.Amount.IsPositive() {
+		return nil, fmt.Errorf("invalid amount %s", msg.Amount.String())
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(

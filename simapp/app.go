@@ -154,7 +154,7 @@ func NewSimApp(
 	)
 
 	app.HaloKeeper = halokeeper.NewKeeper(
-		appCodec, keys[halotypes.ModuleName], "uusyc", "uusdc", app.AccountKeeper, nil,
+		appCodec, keys[halotypes.ModuleName], "uusyc", "uusdc", app.AccountKeeper, nil, interfaceRegistry,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),

@@ -39,6 +39,7 @@ func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper)
 		"uusdc",
 		account,
 		nil,
+		registry,
 	)
 
 	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)

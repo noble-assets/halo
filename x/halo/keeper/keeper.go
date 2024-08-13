@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	sdkerrors "cosmossdk.io/errors"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types"
@@ -19,8 +19,9 @@ type Keeper struct {
 	Denom      string
 	Underlying string
 
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	accountKeeper     types.AccountKeeper
+	bankKeeper        types.BankKeeper
+	interfaceRegistry codectypes.InterfaceRegistry
 }
 
 func NewKeeper(
@@ -30,6 +31,7 @@ func NewKeeper(
 	underlying string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	interfaceRegistry codectypes.InterfaceRegistry,
 ) *Keeper {
 	return &Keeper{
 		cdc:      cdc,
@@ -38,8 +40,9 @@ func NewKeeper(
 		Denom:      denom,
 		Underlying: underlying,
 
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
+		accountKeeper:     accountKeeper,
+		bankKeeper:        bankKeeper,
+		interfaceRegistry: interfaceRegistry,
 	}
 }
 

@@ -72,6 +72,14 @@ func TestDeposit(t *testing.T) {
 	// ARRANGE: Give user 202.40 $USDC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Underlying, amount))
 
+	// ACT: Attempt to deposit for with a negative amount.
+	_, err = server.Deposit(goCtx, &types.MsgDeposit{
+		Signer: user.Address,
+		Amount: sdk.NewInt(-20000),
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
+
 	// ACT: Attempt to deposit.
 	_, err = server.Deposit(goCtx, &types.MsgDeposit{
 		Signer: user.Address,
@@ -164,6 +172,15 @@ func TestDepositFor(t *testing.T) {
 	// ASSERT: The action should've failed due to insufficient funds.
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
+	// ACT: Attempt to deposit for with a negative amount.
+	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+		Signer:    user.Address,
+		Recipient: recipient.Address,
+		Amount:    sdk.NewInt(-202400000),
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
+
 	// ARRANGE: Give user 202.40 $USDC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Underlying, amount))
 	bank.Balances[recipient.Address] = sdk.Coins{}
@@ -179,6 +196,49 @@ func TestDepositFor(t *testing.T) {
 	require.True(t, bank.Balances[user.Address].IsZero())
 	require.Equal(t, expected, bank.Balances[recipient.Address].AmountOf(k.Denom))
 	require.True(t, bank.Balances[recipient.Address].AmountOf(k.Underlying).IsZero())
+}
+
+func TestDepositForWithRestrictions(t *testing.T) {
+	amount := sdk.NewInt(202400000)
+	bank := mocks.BankKeeper{
+		Balances:    make(map[string]sdk.Coins),
+		Restriction: mocks.FailingSendRestrictionFn,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	goCtx := sdk.WrapSDKContext(ctx)
+	server := keeper.NewMsgServer(k)
+
+	// ARRANGE: Generate user and recipient accounts.
+	user, recipient := utils.TestAccount(), utils.TestAccount()
+
+	// ARRANGE: Assign the international feeder role to user.
+	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	// ARRANGE: Assign the international feeder role to recipient.
+	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+
+	// ARRANGE: Report Ethereum Round #229.
+	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
+	k.SetRound(ctx, 229, aggregator.RoundData{
+		Answer:    sdk.NewInt(104572478),
+		Balance:   sdk.NewInt(7016169453),
+		Interest:  sdk.NewInt(1005815),
+		Supply:    sdk.NewInt(67093843285741),
+		UpdatedAt: 1717153499,
+	})
+	k.SetLastRoundId(ctx, 229)
+
+	// ARRANGE: Give user 202.40 $USDC.
+	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Underlying, amount))
+	bank.Balances[recipient.Address] = sdk.Coins{}
+
+	// ACT: Attempt to deposit for.
+	_, err := server.DepositFor(goCtx, &types.MsgDepositFor{
+		Signer:    user.Address,
+		Recipient: recipient.Address,
+		Amount:    amount,
+	})
+	// ASSERT: The action should fail due to restrictions.
+	require.ErrorContains(t, err, "unable to transfer from module to account")
 }
 
 func TestWithdraw(t *testing.T) {
@@ -304,6 +364,21 @@ func TestWithdraw(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, bank.Balances[user.Address].AmountOf(k.Denom).IsZero())
 	require.Equal(t, expected, bank.Balances[user.Address].AmountOf(k.Underlying))
+
+	// ACT: Attempt to withdraw with a negative amount.
+	negativeSignature, _ := owner.Key.Sign([]byte(fmt.Sprintf(
+		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
+		base64.StdEncoding.EncodeToString(user.Bytes),
+		sdk.NewInt(-200).String(),
+		11,
+	)))
+	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+		Signer:    user.Address,
+		Amount:    sdk.NewInt(-200),
+		Signature: negativeSignature,
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
 }
 
 func TestWithdrawTo(t *testing.T) {
@@ -468,6 +543,22 @@ func TestWithdrawTo(t *testing.T) {
 	require.True(t, bank.Balances[user.Address].IsZero())
 	require.True(t, bank.Balances[recipient.Address].AmountOf(k.Denom).IsZero())
 	require.Equal(t, expected, bank.Balances[recipient.Address].AmountOf(k.Underlying))
+
+	// ACT: Attempt to withdraw to with a negative amount.
+	negativeSignature, _ := owner.Key.Sign([]byte(fmt.Sprintf(
+		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
+		base64.StdEncoding.EncodeToString(recipient.Bytes),
+		sdk.NewInt(-200).String(),
+		11,
+	)))
+	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+		Signer:    user.Address,
+		Recipient: recipient.Address,
+		Amount:    sdk.NewInt(-200),
+		Signature: negativeSignature,
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
 }
 
 func TestWithdrawToAdmin(t *testing.T) {
@@ -610,6 +701,14 @@ func TestBurn(t *testing.T) {
 	// ASSERT: The action should've failed due to insufficient funds.
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
+	// ACT: Attempt to burn with negative amount.
+	_, err = server.Burn(goCtx, &types.MsgBurn{
+		Signer: user.Address,
+		Amount: sdk.NewInt(-1_000_000),
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
+
 	// ARRANGE: Give user 1 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
@@ -672,6 +771,15 @@ func TestBurnFor(t *testing.T) {
 	// ARRANGE: Give user 1 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
+	// ACT: Attempt to burn for with negative amount.
+	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+		Signer: admin.Address,
+		From:   user.Address,
+		Amount: sdk.NewInt(-1_000_000),
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
+
 	// ACT: Attempt to burn.
 	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
 		Signer: admin.Address,
@@ -728,6 +836,15 @@ func TestMint(t *testing.T) {
 	// ASSERT: The action should've failed due to invalid permissions.
 	require.ErrorContains(t, err, "cannot transfer")
 
+	// ACT: Attempt to mint with negative amount.
+	_, err = server.Mint(goCtx, &types.MsgMint{
+		Signer: admin.Address,
+		To:     user.Address,
+		Amount: sdk.NewInt(-1_000_000),
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
+
 	// ACT: Attempt to mint.
 	_, err = server.Mint(goCtx, &types.MsgMint{
 		Signer: admin.Address,
@@ -738,6 +855,29 @@ func TestMint(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, ONE, bank.Balances[user.Address].AmountOf(k.Denom))
 	require.True(t, bank.Balances[types.ModuleName].IsZero())
+}
+
+func TestMintWithRestrictions(t *testing.T) {
+	bank := mocks.BankKeeper{
+		Balances:    make(map[string]sdk.Coins),
+		Restriction: mocks.FailingSendRestrictionFn,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	goCtx := sdk.WrapSDKContext(ctx)
+	server := keeper.NewMsgServer(k)
+
+	// ARRANGE: Generate admin and user accounts.
+	admin, user := utils.TestAccount(), utils.TestAccount()
+	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	// ACT: Attempt to mint with send restrictions.
+	_, err := server.Mint(goCtx, &types.MsgMint{
+		Signer: admin.Address,
+		To:     user.Address,
+		Amount: sdk.NewInt(1_000_000),
+	})
+	// ASSERT: The action should've failed due to restrictions.
+	require.ErrorContains(t, err, "unable to transfer from module to account")
 }
 
 func TestTradeToFiat(t *testing.T) {
@@ -799,6 +939,15 @@ func TestTradeToFiat(t *testing.T) {
 
 	// ARRANGE: Give the module 1 $USDC.
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, ONE))
+
+	// ACT: Attempt to trade to fiat with negative amount.
+	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+		Signer:    admin.Address,
+		Amount:    sdk.NewInt(-1_000_000),
+		Recipient: admin.Address,
+	})
+	// ASSERT: The action should've failed due to invalid amount.
+	require.ErrorContains(t, err, "invalid amount")
 
 	// ACT: Attempt to trade to fiat.
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
