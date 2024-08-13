@@ -115,14 +115,14 @@ func TestRoleCapabilityQuery(t *testing.T) {
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query role capability with an invalid method.
-	res, err := server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	_, err = server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
 		Method: "",
 	})
 	// ASSERT: The query should've failed to invalid method.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query role capability with a non-existing method.
-	res, err = server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	res, err := server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
 		Method: "non-existing",
 	})
 	// ASSERT: The query should've succeeded without results.
@@ -158,14 +158,14 @@ func TestUserCapabilityQuery(t *testing.T) {
 	user := utils.TestAccount()
 
 	// ACT: Attempt to user capability with an invalid address.
-	res, err := server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	_, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
 		Address: user.Invalid,
 	})
 	// ASSERT: The query should've failed to invalid address.
 	require.ErrorContains(t, err, "unable to decode address")
 
 	// ACT: Attempt to query user capability with an address without capabilities.
-	res, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	res, err := server.UserCapability(goCtx, &entitlements.QueryUserCapability{
 		Address: user.Address,
 	})
 	// ASSERT: The query should've succeeded without results.

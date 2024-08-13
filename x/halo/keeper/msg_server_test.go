@@ -379,7 +379,6 @@ func TestWithdraw(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
-
 }
 
 func TestWithdrawTo(t *testing.T) {
@@ -546,7 +545,7 @@ func TestWithdrawTo(t *testing.T) {
 	require.Equal(t, expected, bank.Balances[recipient.Address].AmountOf(k.Underlying))
 
 	// ACT: Attempt to withdraw to with a negative amount.
-	negativeSignature, err := owner.Key.Sign([]byte(fmt.Sprintf(
+	negativeSignature, _ := owner.Key.Sign([]byte(fmt.Sprintf(
 		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
 		base64.StdEncoding.EncodeToString(recipient.Bytes),
 		sdk.NewInt(-200).String(),

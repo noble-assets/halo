@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"context"
+	"strings"
+
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types/entitlements"
-	"strings"
 )
 
 var _ entitlements.MsgServer = &entitlementsMsgServer{}

@@ -3,11 +3,10 @@ package keeper
 import (
 	"encoding/json"
 	"fmt"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	sdkerrors "cosmossdk.io/errors"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types"
@@ -22,7 +21,7 @@ type Keeper struct {
 
 	accountKeeper     types.AccountKeeper
 	bankKeeper        types.BankKeeper
-	interfaceRegistry cdctypes.InterfaceRegistry
+	interfaceRegistry codectypes.InterfaceRegistry
 }
 
 func NewKeeper(
@@ -32,7 +31,7 @@ func NewKeeper(
 	underlying string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
-	interfaceRegistry cdctypes.InterfaceRegistry,
+	interfaceRegistry codectypes.InterfaceRegistry,
 ) *Keeper {
 	return &Keeper{
 		cdc:      cdc,
