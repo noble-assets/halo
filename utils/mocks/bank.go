@@ -58,8 +58,8 @@ func NoOpSendRestrictionFn(_ sdk.Context, _, toAddr sdk.AccAddress, _ sdk.Coins)
 	return toAddr, nil
 }
 
-func FailingSendRestrictionFn(_ sdk.Context, _, addr sdk.AccAddress, _ sdk.Coins) (sdk.AccAddress, error) {
-	return nil, fmt.Errorf("%s is blocked from sending/receiving", addr.String())
+func FailingSendRestrictionFn(_ sdk.Context, _, toAddr sdk.AccAddress, _ sdk.Coins) (sdk.AccAddress, error) {
+	return nil, fmt.Errorf("%s is blocked from sending/receiving", toAddr.String())
 }
 
 func (k BankKeeper) WithSendCoinsRestriction(check SendRestrictionFn) BankKeeper {

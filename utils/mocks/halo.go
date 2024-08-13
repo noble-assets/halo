@@ -42,7 +42,7 @@ func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper)
 		registry,
 	)
 
-	bank = bank.WithSendCoinsRestriction(bank.Restriction)
+	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)
 	k.SetBankKeeper(bank)
 
 	halo.InitGenesis(ctx, k, *types.DefaultGenesisState())
