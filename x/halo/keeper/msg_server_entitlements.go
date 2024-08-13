@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"context"
-
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types/entitlements"
+	"strings"
 )
 
 var _ entitlements.MsgServer = &entitlementsMsgServer{}
@@ -23,6 +23,11 @@ func (k entitlementsMsgServer) SetPublicCapability(goCtx context.Context, msg *e
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
+	}
+
+	resolved, _ := k.interfaceRegistry.Resolve(msg.Method)
+	if !(msg.Method == "transfer" || (resolved != nil && strings.HasPrefix(msg.Method, "/halo"))) {
+		return nil, errors.Wrapf(entitlements.ErrInvalidMethod, "method %s does not exist or is not allowed", msg.Method)
 	}
 
 	k.Keeper.SetPublicCapability(ctx, msg.Method, msg.Enabled)
@@ -43,6 +48,11 @@ func (k entitlementsMsgServer) SetRoleCapability(goCtx context.Context, msg *ent
 	_, roleExists := entitlements.Role_value[msg.Role.String()]
 	if !roleExists {
 		return nil, errors.Wrapf(entitlements.ErrInvalidRole, "role %s does not exist", msg.Role)
+	}
+
+	resolved, _ := k.interfaceRegistry.Resolve(msg.Method)
+	if !(msg.Method == "transfer" || (resolved != nil && strings.HasPrefix(msg.Method, "/halo"))) {
+		return nil, errors.Wrapf(entitlements.ErrInvalidMethod, "method %s does not exist or is not allowed", msg.Method)
 	}
 
 	k.Keeper.SetRoleCapability(ctx, msg.Method, msg.Role, msg.Enabled)

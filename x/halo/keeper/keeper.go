@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/json"
 	"fmt"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	sdkerrors "cosmossdk.io/errors"
 
@@ -19,8 +20,9 @@ type Keeper struct {
 	Denom      string
 	Underlying string
 
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	accountKeeper     types.AccountKeeper
+	bankKeeper        types.BankKeeper
+	interfaceRegistry cdctypes.InterfaceRegistry
 }
 
 func NewKeeper(
@@ -30,6 +32,7 @@ func NewKeeper(
 	underlying string,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	interfaceRegistry cdctypes.InterfaceRegistry,
 ) *Keeper {
 	return &Keeper{
 		cdc:      cdc,
@@ -38,8 +41,9 @@ func NewKeeper(
 		Denom:      denom,
 		Underlying: underlying,
 
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
+		accountKeeper:     accountKeeper,
+		bankKeeper:        bankKeeper,
+		interfaceRegistry: interfaceRegistry,
 	}
 }
 

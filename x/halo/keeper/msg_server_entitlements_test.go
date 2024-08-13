@@ -140,6 +140,35 @@ func TestEntitlementsPublicCapabilities(t *testing.T) {
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, entitlements.ErrInvalidOwner.Error())
 
+	// ACT: Attempt set public capability with invalid method.
+	_, err = server.SetPublicCapability(goCtx, &entitlements.MsgSetPublicCapability{
+		Signer:  owner.Address,
+		Method:  "transfer2",
+		Enabled: true,
+	})
+	// ASSERT: The action should've failed due to invalid method.
+	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
+
+	// ACT: Attempt set public capability with non-allowed method.
+	_, err = server.SetPublicCapability(goCtx, &entitlements.MsgSetPublicCapability{
+		Signer:  owner.Address,
+		Method:  "/cosmos.bank.v1beta1.MsgSend",
+		Enabled: true,
+	})
+	// ASSERT: The action should've failed due to non-allowed cosmos method.
+	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
+
+	// ACT: Attempt set public capability a valid capability.
+	_, err = server.SetPublicCapability(goCtx, &entitlements.MsgSetPublicCapability{
+		Signer:  owner.Address,
+		Method:  "/halo.entitlements.v1.MsgSetRoleCapability",
+		Enabled: true,
+	})
+	// ASSERT: The action should've succeeded, and set method and enabled state.
+	require.NoError(t, err)
+	require.Equal(t, true, k.IsPublicCapability(ctx, "/halo.entitlements.v1.MsgSetRoleCapability"))
+	require.Equal(t, 1, len(k.GetPublicCapabilities(ctx)))
+
 	// ACT: Attempt set public capability a valid capability.
 	_, err = server.SetPublicCapability(goCtx, &entitlements.MsgSetPublicCapability{
 		Signer:  owner.Address,
@@ -149,7 +178,7 @@ func TestEntitlementsPublicCapabilities(t *testing.T) {
 	// ASSERT: The action should've succeeded, and set method and enabled state.
 	require.NoError(t, err)
 	require.Equal(t, true, k.IsPublicCapability(ctx, "transfer"))
-	require.Equal(t, 1, len(k.GetPublicCapabilities(ctx)))
+	require.Equal(t, 2, len(k.GetPublicCapabilities(ctx)))
 
 	// ACT: Attempt to update a public capability.
 	_, err = server.SetPublicCapability(goCtx, &entitlements.MsgSetPublicCapability{
@@ -271,6 +300,9 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsMsgServer(k)
 
+	// ASSERT: Initial genesis capabilities state
+	require.Equal(t, 4, len(k.GetCapabilityRoles(ctx, "transfer")))
+
 	// ACT: Attempt to set role capability with no owner set.
 	_, err := server.SetRoleCapability(goCtx, &entitlements.MsgSetRoleCapability{})
 	// ASSERT: The action should've failed due to no owner set.
@@ -317,25 +349,46 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to a non-existing role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidRole.Error())
 
-	// ACT: Attempt set user role with valid message.
+	require.Equal(t, 4, len(k.GetCapabilityRoles(ctx, "transfer")))
+	// ACT: Attempt set user role with a non-existing method.
 	_, err = server.SetRoleCapability(goCtx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
-		Method:  "custom-method",
+		Method:  "transfer2",
 		Role:    2,
-		Enabled: true,
+		Enabled: false,
 	})
-	// ASSERT: The action should've succeeded, and set the role capability.
-	require.NoError(t, err)
-	require.Equal(t, 1, len(k.GetCapabilityRoles(ctx, "custom-method")))
+	// ASSERT: The action should've failed due to a non-existing role.
+	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
+
+	// ACT: Attempt set user role with a non-allowed method.
+	_, err = server.SetRoleCapability(goCtx, &entitlements.MsgSetRoleCapability{
+		Signer:  owner.Address,
+		Method:  "/cosmos.bank.v1beta1.MsgSend",
+		Role:    2,
+		Enabled: false,
+	})
+	// ASSERT: The action should've failed due to a non-allowed role.
+	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
 
 	// ACT: Attempt set user role with valid message.
 	_, err = server.SetRoleCapability(goCtx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
-		Method:  "custom-method",
-		Role:    2,
+		Method:  "transfer",
+		Role:    5,
+		Enabled: true,
+	})
+	// ASSERT: The action should've succeeded, and set the role capability.
+	require.NoError(t, err)
+	require.Equal(t, 5, len(k.GetCapabilityRoles(ctx, "transfer")))
+
+	// ACT: Attempt remove user role.
+	_, err = server.SetRoleCapability(goCtx, &entitlements.MsgSetRoleCapability{
+		Signer:  owner.Address,
+		Method:  "transfer",
+		Role:    5,
 		Enabled: false,
 	})
 	// ASSERT: The action should've succeeded, and removed the role capability.
 	require.NoError(t, err)
-	require.Equal(t, 0, len(k.GetCapabilityRoles(ctx, "custom-method")))
+	require.Equal(t, 4, len(k.GetCapabilityRoles(ctx, "transfer")))
 }
