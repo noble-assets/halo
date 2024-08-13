@@ -26,6 +26,16 @@ func TestReportBalance(t *testing.T) {
 	owner := utils.TestAccount()
 	k.SetAggregatorOwner(ctx, owner.Address)
 
+	// ARRANGE: Save the original LastRoundIDKey and reset it to an empty byte slice.
+	tmpLastRoundIDKey := aggregator.LastRoundIDKey
+	aggregator.LastRoundIDKey = []byte("")
+
+	// ACT: Verify the LastRoundIDKey is set to zero when the key is reset to an empty slice.
+	require.Equal(t, k.GetLastRoundId(ctx), uint64(0))
+
+	// ARRANGE: Restore the original LastRoundIDKey to its previous value.
+	aggregator.LastRoundIDKey = tmpLastRoundIDKey
+
 	// ACT: Attempt to report balance with invalid signer.
 	_, err = server.ReportBalance(goCtx, &aggregator.MsgReportBalance{
 		Signer: utils.TestAccount().Address,

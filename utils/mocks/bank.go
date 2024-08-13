@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"fmt"
+
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
@@ -15,7 +17,7 @@ type BankKeeper struct {
 	Restriction SendRestrictionFn
 }
 
-func (k BankKeeper) BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error {
+func (k BankKeeper) BurnCoins(_ sdk.Context, moduleName string, amt sdk.Coins) error {
 	address := authtypes.NewModuleAddress(moduleName).String()
 
 	balance := k.Balances[address]
@@ -29,7 +31,7 @@ func (k BankKeeper) BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins)
 	return nil
 }
 
-func (k BankKeeper) MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error {
+func (k BankKeeper) MintCoins(_ sdk.Context, moduleName string, amt sdk.Coins) error {
 	address := authtypes.NewModuleAddress(moduleName).String()
 	k.Balances[address] = k.Balances[address].Add(amt...)
 
@@ -54,6 +56,10 @@ type SendRestrictionFn func(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, am
 
 func NoOpSendRestrictionFn(_ sdk.Context, _, toAddr sdk.AccAddress, _ sdk.Coins) (sdk.AccAddress, error) {
 	return toAddr, nil
+}
+
+func FailingSendRestrictionFn(_ sdk.Context, _, toAddr sdk.AccAddress, _ sdk.Coins) (sdk.AccAddress, error) {
+	return nil, fmt.Errorf("%s is blocked from sending/receiving", toAddr.String())
 }
 
 func (k BankKeeper) WithSendCoinsRestriction(check SendRestrictionFn) BankKeeper {
