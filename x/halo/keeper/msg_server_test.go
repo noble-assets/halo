@@ -210,7 +210,10 @@ func TestDepositForWithRestrictions(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -877,7 +880,10 @@ func TestMintWithRestrictions(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 

@@ -42,7 +42,7 @@ func NewKeeper(
 		Denom:      denom,
 		Underlying: underlying,
 
-    accountKeeper:     accountKeeper,
+		accountKeeper:     accountKeeper,
 		bankKeeper:        bankKeeper,
 		ftfKeeper:         ftfKeeper,
 		interfaceRegistry: interfaceRegistry,
