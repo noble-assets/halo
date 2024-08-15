@@ -1,6 +1,7 @@
 package mocks
 
 import (
+	"bytes"
 	ftftypes "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types"
@@ -9,11 +10,17 @@ import (
 var _ types.FiatTokenFactoryKeeper = FTFKeeper{}
 
 type FTFKeeper struct {
-	Paused bool
+	Paused    bool
+	Blacklist [][]byte
 }
 
 func (k FTFKeeper) GetBlacklisted(_ sdk.Context, bz []byte) (ftftypes.Blacklisted, bool) {
-	return ftftypes.Blacklisted{AddressBz: bz}, false // TODO
+	for _, addrBytes := range k.Blacklist {
+		if bytes.Equal(addrBytes, bz) {
+			return ftftypes.Blacklisted{AddressBz: bz}, true
+		}
+	}
+	return ftftypes.Blacklisted{AddressBz: bz}, false
 }
 
 func (k FTFKeeper) GetPaused(_ sdk.Context) ftftypes.Paused {

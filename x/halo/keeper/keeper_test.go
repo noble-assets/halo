@@ -131,6 +131,8 @@ func TestSendRestrictionTransfer(t *testing.T) {
 	testCases := []struct {
 		name             string
 		paused           bool
+		ftfPaused        bool
+		ftfBlacklist     [][]byte
 		senderAllowed    bool
 		recipientAllowed bool
 		coins            sdk.Coins
@@ -208,6 +210,36 @@ func TestSendRestrictionTransfer(t *testing.T) {
 			coins:            coins,
 			err:              "cannot transfer",
 		},
+		{
+			name:             "FtfPaused",
+			paused:           false,
+			senderAllowed:    true,
+			recipientAllowed: true,
+			coins:            sdk.NewCoins(sdk.NewCoin("uusdc", ONE)),
+			ftfPaused:        true,
+			ftfBlacklist:     make([][]byte, 0),
+			err:              "transfers are paused",
+		},
+		{
+			name:             "FtfSenderBlacklisted",
+			paused:           false,
+			senderAllowed:    true,
+			recipientAllowed: true,
+			coins:            sdk.NewCoins(sdk.NewCoin("uusdc", ONE)),
+			ftfPaused:        false,
+			ftfBlacklist:     [][]byte{alice.Bytes},
+			err:              "is blocked from sending",
+		},
+		{
+			name:             "FtfSenderBlacklisted",
+			paused:           false,
+			senderAllowed:    true,
+			recipientAllowed: true,
+			coins:            sdk.NewCoins(sdk.NewCoin("uusdc", ONE)),
+			ftfPaused:        false,
+			ftfBlacklist:     [][]byte{bob.Bytes},
+			err:              "is blocked from receiving",
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -218,6 +250,8 @@ func TestSendRestrictionTransfer(t *testing.T) {
 			keeper.SetUserRole(ctx, alice.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.senderAllowed)
 			// ARRANGE: Set recipient allowed state.
 			keeper.SetUserRole(ctx, bob.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.recipientAllowed)
+			// ARRANGE: Set FiatTokenFactory Keeper
+			keeper.SetFTFKeeper(mocks.FTFKeeper{Paused: testCase.ftfPaused, Blacklist: testCase.ftfBlacklist})
 
 			// ACT: Attempt to transfer.
 			_, err := keeper.SendRestrictionFn(ctx, alice.Bytes, bob.Bytes, testCase.coins)
