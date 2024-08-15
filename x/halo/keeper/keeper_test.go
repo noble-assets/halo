@@ -231,7 +231,7 @@ func TestSendRestrictionTransfer(t *testing.T) {
 			err:              "is blocked from sending",
 		},
 		{
-			name:             "FtfSenderBlacklisted",
+			name:             "FtfReceiverBlacklisted",
 			paused:           false,
 			senderAllowed:    true,
 			recipientAllowed: true,
