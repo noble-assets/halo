@@ -45,6 +45,10 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
+	ftf "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory"
+	ftfkeeper "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/keeper"
+	ftftypes "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
+
 	"github.com/noble-assets/halo/x/halo"
 	halokeeper "github.com/noble-assets/halo/x/halo/keeper"
 	halotypes "github.com/noble-assets/halo/x/halo/types"
@@ -59,6 +63,7 @@ var (
 		genutil.AppModuleBasic{},
 		params.AppModuleBasic{},
 		staking.AppModuleBasic{},
+		ftf.AppModuleBasic{},
 		halo.AppModuleBasic{},
 	)
 
@@ -66,6 +71,7 @@ var (
 		authtypes.FeeCollectorName:     nil,
 		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		ftftypes.ModuleName:            {authtypes.Burner, authtypes.Minter},
 		halotypes.ModuleName:           {authtypes.Burner, authtypes.Minter},
 	}
 )
@@ -95,6 +101,7 @@ type SimApp struct {
 	ParamsKeeper  paramskeeper.Keeper
 	StakingKeeper stakingkeeper.Keeper
 	// Custom Modules
+	FTFKeeper  *ftfkeeper.Keeper
 	HaloKeeper *halokeeper.Keeper
 }
 
@@ -128,7 +135,7 @@ func NewSimApp(
 
 	keys := sdk.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, paramstypes.StoreKey, stakingtypes.StoreKey,
-		halotypes.ModuleName,
+		ftftypes.StoreKey, halotypes.ModuleName,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 
@@ -154,7 +161,7 @@ func NewSimApp(
 	)
 
 	app.HaloKeeper = halokeeper.NewKeeper(
-		appCodec, keys[halotypes.ModuleName], "uusyc", "uusdc", app.AccountKeeper, nil, interfaceRegistry,
+		appCodec, keys[halotypes.ModuleName], "uusyc", "uusdc", app.AccountKeeper, nil, nil, interfaceRegistry,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
@@ -165,6 +172,11 @@ func NewSimApp(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
 
+	app.FTFKeeper = ftfkeeper.NewKeeper(
+		appCodec, keys[ftftypes.StoreKey], app.GetSubspace(ftftypes.ModuleName), app.BankKeeper,
+	)
+	app.HaloKeeper.SetFTFKeeper(app.FTFKeeper)
+
 	app.mm = module.NewManager(
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
 		bank.NewAppModule(appCodec, app.BankKeeper.(bankkeeper.BaseKeeper), app.AccountKeeper),
@@ -174,20 +186,23 @@ func NewSimApp(
 		),
 		params.NewAppModule(app.ParamsKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		ftf.NewAppModule(appCodec, app.FTFKeeper, app.AccountKeeper, app.BankKeeper),
 		halo.NewAppModule(app.HaloKeeper),
 	)
 
 	app.mm.SetOrderBeginBlockers(
 		stakingtypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, genutiltypes.ModuleName, paramstypes.ModuleName,
-		halotypes.ModuleName,
+		ftftypes.ModuleName, halotypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		stakingtypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName, genutiltypes.ModuleName, paramstypes.ModuleName,
-		halotypes.ModuleName,
+		ftftypes.ModuleName, halotypes.ModuleName,
 	)
+	// NOTE: FiatTokenFactory has to be initialized before x/genutils, so that
+	//  the Halo send restrictions can execute on the gentxs.
 	app.mm.SetOrderInitGenesis(
-		authtypes.ModuleName, banktypes.ModuleName, stakingtypes.ModuleName, genutiltypes.ModuleName, paramstypes.ModuleName,
-		halotypes.ModuleName,
+		authtypes.ModuleName, banktypes.ModuleName, stakingtypes.ModuleName, ftftypes.ModuleName, genutiltypes.ModuleName,
+		paramstypes.ModuleName, halotypes.ModuleName,
 	)
 
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
@@ -295,6 +310,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
+	paramsKeeper.Subspace(ftftypes.ModuleName)
 
 	return paramsKeeper
 }

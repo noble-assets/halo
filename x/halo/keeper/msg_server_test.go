@@ -27,7 +27,10 @@ func TestDeposit(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -100,7 +103,10 @@ func TestDepositFor(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -204,7 +210,10 @@ func TestDepositForWithRestrictions(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -253,7 +262,10 @@ func TestWithdraw(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -393,7 +405,10 @@ func TestWithdrawTo(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -570,7 +585,10 @@ func TestWithdrawToAdmin(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -669,7 +687,7 @@ func TestBurn(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -728,7 +746,7 @@ func TestBurnFor(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -797,7 +815,7 @@ func TestMint(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -862,7 +880,10 @@ func TestMintWithRestrictions(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
@@ -885,7 +906,10 @@ func TestTradeToFiat(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
+	ftf := mocks.FTFKeeper{
+		Paused: false,
+	}
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
