@@ -2,6 +2,7 @@ package mocks
 
 import (
 	"bytes"
+
 	ftftypes "github.com/circlefin/noble-fiattokenfactory/x/fiattokenfactory/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/x/halo/types"
