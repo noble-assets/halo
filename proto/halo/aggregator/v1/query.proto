@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package halo.aggregator.v1;
 
+import "amino/amino.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
@@ -9,24 +12,30 @@ option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
 
 service Query {
   rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/owner";
   }
 
   rpc NextPrice(QueryNextPrice) returns (QueryNextPriceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/next_price";
   }
 
   rpc RoundData(QueryRoundData) returns (QueryRoundDataResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/round_data/{round_id}";
   }
   rpc LatestRoundData(QueryLatestRoundData) returns (QueryRoundDataResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/round_data";
   }
 
   rpc RoundDetails(QueryRoundDetails) returns (QueryRoundDetailsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/round_details/{round_id}";
   }
   rpc LatestRoundDetails(QueryLatestRoundDetails) returns (QueryRoundDetailsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/aggregator/v1/round_details";
   }
 }
@@ -43,7 +52,9 @@ message QueryNextPrice {}
 
 message QueryNextPriceResponse {
   string next_price = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -57,7 +68,9 @@ message QueryLatestRoundData {}
 message QueryRoundDataResponse {
   uint64 round_id = 1;
   string answer = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   int64 started_at = 3;
@@ -74,15 +87,21 @@ message QueryLatestRoundDetails {}
 message QueryRoundDetailsResponse {
   uint64 round_id = 1;
   string balance = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   string interest = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   string total_supply = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   int64 updated_at = 5;

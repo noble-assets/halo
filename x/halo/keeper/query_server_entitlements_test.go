@@ -14,11 +14,10 @@ import (
 
 func TestEntitlementsOwnerQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsQueryServer(k)
 
 	// ACT: Attempt to query entitlements owner with invalid request.
-	_, err := server.Owner(goCtx, nil)
+	_, err := server.Owner(ctx, nil)
 	// ASSERT: The query should've failed due to invalid request.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
@@ -27,7 +26,7 @@ func TestEntitlementsOwnerQuery(t *testing.T) {
 	k.SetEntitlementsOwner(ctx, owner.Address)
 
 	// ACT: Attempt to query entitlements owner.
-	res, err := server.Owner(goCtx, &entitlements.QueryOwner{})
+	res, err := server.Owner(ctx, &entitlements.QueryOwner{})
 	// ASSERT: The query should've succeeded.
 	require.NoError(t, err)
 	require.Equal(t, owner.Address, res.Owner)
@@ -35,16 +34,15 @@ func TestEntitlementsOwnerQuery(t *testing.T) {
 
 func TestPausedQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsQueryServer(k)
 
 	// ACT: Attempt to query paused state with invalid request.
-	_, err := server.Paused(goCtx, nil)
+	_, err := server.Paused(ctx, nil)
 	// ASSERT: The query should've failed due to invalid request.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query paused state with no state.
-	res, err := server.Paused(goCtx, &entitlements.QueryPaused{})
+	res, err := server.Paused(ctx, &entitlements.QueryPaused{})
 	// ASSERT: The query should've succeeded, and returned false.
 	require.NoError(t, err)
 	require.False(t, res.Paused)
@@ -53,7 +51,7 @@ func TestPausedQuery(t *testing.T) {
 	k.SetPaused(ctx, true)
 
 	// ACT: Attempt to query paused state with state.
-	res, err = server.Paused(goCtx, &entitlements.QueryPaused{})
+	res, err = server.Paused(ctx, &entitlements.QueryPaused{})
 	// ASSERT: The query should've succeeded, and returned true.
 	require.NoError(t, err)
 	require.True(t, res.Paused)
@@ -61,23 +59,22 @@ func TestPausedQuery(t *testing.T) {
 
 func TestPublicCapabilityQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsQueryServer(k)
 
 	// ACT: Attempt to query public capability with invalid request.
-	_, err := server.PublicCapability(goCtx, nil)
+	_, err := server.PublicCapability(ctx, nil)
 	// ASSERT: The query should've failed due to invalid request.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query public capability with invalid method.
-	_, err = server.PublicCapability(goCtx, &entitlements.QueryPublicCapability{
+	_, err = server.PublicCapability(ctx, &entitlements.QueryPublicCapability{
 		Method: "",
 	})
 	// ASSERT: The query should've failed due to invalid method.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query public capability that is disabled.
-	res, err := server.PublicCapability(goCtx, &entitlements.QueryPublicCapability{
+	res, err := server.PublicCapability(ctx, &entitlements.QueryPublicCapability{
 		Method: "transfer",
 	})
 	// ASSERT: The query should've succeeded.
@@ -89,7 +86,7 @@ func TestPublicCapabilityQuery(t *testing.T) {
 	k.SetPublicCapability(ctx, "transfer", true)
 
 	// ACT: Attempt to query public capability that is enabled.
-	res, err = server.PublicCapability(goCtx, &entitlements.QueryPublicCapability{
+	res, err = server.PublicCapability(ctx, &entitlements.QueryPublicCapability{
 		Method: "transfer",
 	})
 	// ASSERT: The query should've succeeded.
@@ -99,30 +96,29 @@ func TestPublicCapabilityQuery(t *testing.T) {
 
 func TestRoleCapabilityQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsQueryServer(k)
 
 	// ACT: Attempt to query role capability with invalid request.
-	_, err := server.RoleCapability(goCtx, nil)
+	_, err := server.RoleCapability(ctx, nil)
 	// ASSERT: The query should've failed due to invalid request.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query role capability with invalid method.
-	_, err = server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	_, err = server.RoleCapability(ctx, &entitlements.QueryRoleCapability{
 		Method: "",
 	})
 	// ASSERT: The query should've failed due to invalid method.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query role capability with an invalid method.
-	_, err = server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	_, err = server.RoleCapability(ctx, &entitlements.QueryRoleCapability{
 		Method: "",
 	})
 	// ASSERT: The query should've failed to invalid method.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query role capability with a non-existing method.
-	res, err := server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	res, err := server.RoleCapability(ctx, &entitlements.QueryRoleCapability{
 		Method: "non-existing",
 	})
 	// ASSERT: The query should've succeeded without results.
@@ -130,7 +126,7 @@ func TestRoleCapabilityQuery(t *testing.T) {
 	require.Equal(t, 0, len(res.Roles))
 
 	// ACT: Attempt to query role capability with an existing method.
-	res, err = server.RoleCapability(goCtx, &entitlements.QueryRoleCapability{
+	res, err = server.RoleCapability(ctx, &entitlements.QueryRoleCapability{
 		Method: "transfer",
 	})
 	// ASSERT: The query should've succeeded with results.
@@ -140,16 +136,15 @@ func TestRoleCapabilityQuery(t *testing.T) {
 
 func TestUserCapabilityQuery(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewEntitlementsQueryServer(k)
 
 	// ACT: Attempt to query user capability with invalid request.
-	_, err := server.UserCapability(goCtx, nil)
+	_, err := server.UserCapability(ctx, nil)
 	// ASSERT: The query should've failed due to invalid request.
 	require.ErrorContains(t, err, errors.ErrInvalidRequest.Error())
 
 	// ACT: Attempt to query user capability with an empty address.
-	_, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	_, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: "",
 	})
 	// ASSERT: The query should've failed due to empty address.
@@ -158,14 +153,14 @@ func TestUserCapabilityQuery(t *testing.T) {
 	user := utils.TestAccount()
 
 	// ACT: Attempt to user capability with an invalid address.
-	_, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	_, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: user.Invalid,
 	})
 	// ASSERT: The query should've failed to invalid address.
 	require.ErrorContains(t, err, "unable to decode address")
 
 	// ACT: Attempt to query user capability with an address without capabilities.
-	res, err := server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	res, err := server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: user.Address,
 	})
 	// ASSERT: The query should've succeeded without results.
@@ -176,7 +171,7 @@ func TestUserCapabilityQuery(t *testing.T) {
 	k.SetUserRole(ctx, userAddress, 2, true)
 
 	// ACT: Attempt to query role capability with an existing user and capability.
-	res, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	res, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: user.Address,
 	})
 	// ASSERT: The query should've succeeded with results.
@@ -188,7 +183,7 @@ func TestUserCapabilityQuery(t *testing.T) {
 
 	k.SetUserRole(ctx, userAddress, 3, true)
 	// ACT: Attempt to query role capability with an existing user and multiple capabilities.
-	res, err = server.UserCapability(goCtx, &entitlements.QueryUserCapability{
+	res, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: user.Address,
 	})
 	// ASSERT: The query should've succeeded with results.

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/noble-assets/halo/x/halo/types/aggregator"
 )
@@ -19,36 +18,31 @@ func NewAggregatorQueryServer(keeper *Keeper) aggregator.QueryServer {
 	return &aggregatorQueryServer{Keeper: keeper}
 }
 
-func (k aggregatorQueryServer) Owner(goCtx context.Context, req *aggregator.QueryOwner) (*aggregator.QueryOwnerResponse, error) {
+func (k aggregatorQueryServer) Owner(ctx context.Context, req *aggregator.QueryOwner) (*aggregator.QueryOwnerResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &aggregator.QueryOwnerResponse{
 		Owner: k.GetAggregatorOwner(ctx),
 	}, nil
 }
 
-func (k aggregatorQueryServer) NextPrice(goCtx context.Context, req *aggregator.QueryNextPrice) (*aggregator.QueryNextPriceResponse, error) {
+func (k aggregatorQueryServer) NextPrice(ctx context.Context, req *aggregator.QueryNextPrice) (*aggregator.QueryNextPriceResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &aggregator.QueryNextPriceResponse{
 		NextPrice: k.GetNextPrice(ctx),
 	}, nil
 }
 
-func (k aggregatorQueryServer) RoundData(goCtx context.Context, req *aggregator.QueryRoundData) (*aggregator.QueryRoundDataResponse, error) {
+func (k aggregatorQueryServer) RoundData(ctx context.Context, req *aggregator.QueryRoundData) (*aggregator.QueryRoundDataResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
 	round, found := k.Keeper.GetRound(ctx, req.RoundId)
 	if !found {
 		return nil, fmt.Errorf("unknown round %d", req.RoundId)
@@ -63,12 +57,11 @@ func (k aggregatorQueryServer) RoundData(goCtx context.Context, req *aggregator.
 	}, nil
 }
 
-func (k aggregatorQueryServer) LatestRoundData(goCtx context.Context, req *aggregator.QueryLatestRoundData) (*aggregator.QueryRoundDataResponse, error) {
+func (k aggregatorQueryServer) LatestRoundData(ctx context.Context, req *aggregator.QueryLatestRoundData) (*aggregator.QueryRoundDataResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
 	id := k.GetLastRoundId(ctx)
 	round, _ := k.GetRound(ctx, id)
 
@@ -81,12 +74,11 @@ func (k aggregatorQueryServer) LatestRoundData(goCtx context.Context, req *aggre
 	}, nil
 }
 
-func (k aggregatorQueryServer) RoundDetails(goCtx context.Context, req *aggregator.QueryRoundDetails) (*aggregator.QueryRoundDetailsResponse, error) {
+func (k aggregatorQueryServer) RoundDetails(ctx context.Context, req *aggregator.QueryRoundDetails) (*aggregator.QueryRoundDetailsResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
 	round, found := k.Keeper.GetRound(ctx, req.RoundId)
 	if !found {
 		return nil, fmt.Errorf("unknown round %d", req.RoundId)
@@ -101,12 +93,11 @@ func (k aggregatorQueryServer) RoundDetails(goCtx context.Context, req *aggregat
 	}, nil
 }
 
-func (k aggregatorQueryServer) LatestRoundDetails(goCtx context.Context, req *aggregator.QueryLatestRoundDetails) (*aggregator.QueryRoundDetailsResponse, error) {
+func (k aggregatorQueryServer) LatestRoundDetails(ctx context.Context, req *aggregator.QueryLatestRoundDetails) (*aggregator.QueryRoundDetailsResponse, error) {
 	if req == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
 	id := k.GetLastRoundId(ctx)
 	round, _ := k.Keeper.GetRound(ctx, id)
 

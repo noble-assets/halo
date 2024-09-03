@@ -2,11 +2,16 @@ syntax = "proto3";
 
 package halo.v1;
 
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/noble-assets/halo/x/halo/types";
 
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   rpc Deposit(MsgDeposit) returns (MsgDepositResponse);
   rpc DepositFor(MsgDepositFor) returns (MsgDepositResponse);
   rpc Withdraw(MsgWithdraw) returns (MsgWithdrawResponse);
@@ -22,25 +27,35 @@ service Msg {
 
 // MsgDeposit implements the deposit (0xb6b55f25) method.
 message MsgDeposit {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/Deposit";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
 
 // MsgDepositFor implements the depositFor (0x2f4f21e2) method.
 message MsgDepositFor {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/DepositFor";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string recipient = 2;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string recipient = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -48,19 +63,26 @@ message MsgDepositFor {
 // MsgDepositResponse ...
 message MsgDepositResponse {
   string amount = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
 
 // MsgWithdraw implements the withdraw (0x5ebfdfc6) method.
 message MsgWithdraw {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/Withdraw";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   bytes signature = 3;
@@ -68,13 +90,18 @@ message MsgWithdraw {
 
 // MsgWithdrawTo implements the withdrawTo (0xc2930c45) method.
 message MsgWithdrawTo {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/WithdrawTo";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string recipient = 2;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string recipient = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   bytes signature = 4;
@@ -82,14 +109,19 @@ message MsgWithdrawTo {
 
 // MsgWithdrawToAdmin implements the withdrawToAdminOnly method.
 message MsgWithdrawToAdmin {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/WithdrawToAdmin";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string from = 2;
-  string recipient = 3;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string from = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string recipient = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -97,19 +129,26 @@ message MsgWithdrawToAdmin {
 // MsgWithdrawResponse ...
 message MsgWithdrawResponse {
   string amount = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
 
 // MsgBurn implements the burn (0x42966c68) method.
 message MsgBurn {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/Burn";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -119,13 +158,18 @@ message MsgBurnResponse {}
 
 // MsgBurnFor implements the burnFor (0x1dd319cb) method.
 message MsgBurnFor {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/BurnFor";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string from = 2;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string from = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -135,13 +179,18 @@ message MsgBurnForResponse {}
 
 // MsgMint implements the mint (0x40c10f19) method.
 message MsgMint {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/Mint";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string to = 2;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string to = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
 }
@@ -151,15 +200,20 @@ message MsgMintResponse {}
 
 // MsgTradeToFiat implements the tradeToFiat (0x4cdbb826) method.
 message MsgTradeToFiat {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/TradeToFiat";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  string recipient = 3;
+  string recipient = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 // MsgTradeToFiatResponse ...
@@ -167,11 +221,14 @@ message MsgTradeToFiatResponse {}
 
 // MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
 message MsgTransferOwnership {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name) = "halo/TransferOwnership";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
-  string signer = 1;
-  string new_owner = 2;
+  string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string new_owner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 // MsgTransferOwnershipResponse ...

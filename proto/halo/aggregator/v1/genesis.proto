@@ -2,16 +2,20 @@ syntax = "proto3";
 
 package halo.aggregator.v1;
 
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "halo/aggregator/v1/aggregator.proto";
 
 option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
 
 message GenesisState {
-  string owner = 1;
+  string owner = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 last_round_id = 2;
   string next_price = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (amino.dont_omitempty) = true,
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
   map<uint64, RoundData> rounds = 4 [(gogoproto.nullable) = false];

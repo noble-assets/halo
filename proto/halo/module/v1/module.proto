@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package halo.module.v1;
+
+import "cosmos/app/v1alpha1/module.proto";
+
+// Module is the config object of the Halo module.
+message Module {
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/noble-assets/halo/x/halo"};
+
+  // denom is the denom this module is allowed to govern, burn, mint, etc.
+  string denom = 1;
+  // underlying is the denom this module uses as underlying collateral.
+  string underlying = 2;
+}

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package halo.entitlements.v1;
 
+import "cosmos/query/v1/query.proto";
 import "google/api/annotations.proto";
 import "halo/entitlements/v1/entitlements.proto";
 
@@ -9,22 +10,27 @@ option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
 
 service Query {
   rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/entitlements/v1/owner";
   }
 
   rpc Paused(QueryPaused) returns (QueryPausedResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/entitlements/v1/paused";
   }
 
   rpc PublicCapability(QueryPublicCapability) returns (QueryPublicCapabilityResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/entitlements/v1/public_capability/{method}";
   }
 
   rpc RoleCapability(QueryRoleCapability) returns (QueryRoleCapabilityResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/entitlements/v1/role_capability/{method}";
   }
 
   rpc UserCapability(QueryUserCapability) returns (QueryUserCapabilityResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/entitlements/v1/user_capability/{address}";
   }
 }

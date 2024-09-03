@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/errors"
+	"cosmossdk.io/store/prefix"
+
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/noble-assets/halo/x/halo/types"
 )
@@ -21,25 +24,23 @@ func NewQueryServer(keeper *Keeper) types.QueryServer {
 	return &queryServer{Keeper: keeper}
 }
 
-func (k queryServer) Owner(goCtx context.Context, req *types.QueryOwner) (*types.QueryOwnerResponse, error) {
+func (k queryServer) Owner(ctx context.Context, req *types.QueryOwner) (*types.QueryOwnerResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &types.QueryOwnerResponse{
 		Owner: k.GetOwner(ctx),
 	}, nil
 }
 
-func (k queryServer) Nonces(goCtx context.Context, req *types.QueryNonces) (*types.QueryNoncesResponse, error) {
+func (k queryServer) Nonces(ctx context.Context, req *types.QueryNonces) (*types.QueryNoncesResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
 
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.NoncePrefix)
+	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(adapter, types.NoncePrefix)
 
 	nonces := make(map[string]uint64)
 	pagination, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
@@ -54,12 +55,10 @@ func (k queryServer) Nonces(goCtx context.Context, req *types.QueryNonces) (*typ
 	}, err
 }
 
-func (k queryServer) Nonce(goCtx context.Context, req *types.QueryNonce) (*types.QueryNonceResponse, error) {
+func (k queryServer) Nonce(ctx context.Context, req *types.QueryNonce) (*types.QueryNonceResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	address, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {

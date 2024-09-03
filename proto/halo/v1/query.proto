@@ -3,20 +3,24 @@ syntax = "proto3";
 package halo.v1;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/query/v1/query.proto";
 import "google/api/annotations.proto";
 
 option go_package = "github.com/noble-assets/halo/x/halo/types";
 
 service Query {
   rpc Owner(QueryOwner) returns (QueryOwnerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/v1/owner";
   }
 
   rpc Nonces(QueryNonces) returns (QueryNoncesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/v1/nonces";
   }
 
   rpc Nonce(QueryNonce) returns (QueryNonceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/halo/v1/nonce/{address}";
   }
 }

@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/noble-assets/halo/utils"
 	"github.com/noble-assets/halo/utils/data"
 	"github.com/noble-assets/halo/utils/mocks"
@@ -14,11 +14,10 @@ import (
 
 func TestReportBalance(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewAggregatorMsgServer(k)
 
 	// ACT: Attempt to report balance with no owner set.
-	_, err := server.ReportBalance(goCtx, &aggregator.MsgReportBalance{})
+	_, err := server.ReportBalance(ctx, &aggregator.MsgReportBalance{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
 
@@ -37,7 +36,7 @@ func TestReportBalance(t *testing.T) {
 	aggregator.LastRoundIDKey = tmpLastRoundIDKey
 
 	// ACT: Attempt to report balance with invalid signer.
-	_, err = server.ReportBalance(goCtx, &aggregator.MsgReportBalance{
+	_, err = server.ReportBalance(ctx, &aggregator.MsgReportBalance{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
@@ -47,7 +46,7 @@ func TestReportBalance(t *testing.T) {
 	for _, testCase := range data.EthereumRounds {
 		// ACT: Attempt to report balance.
 		testCase.Msg.Signer = owner.Address
-		res, err := server.ReportBalance(goCtx, &testCase.Msg)
+		res, err := server.ReportBalance(ctx, &testCase.Msg)
 
 		// ASSERT: The action should've succeeded.
 		require.NoError(t, err)
@@ -62,7 +61,7 @@ func TestReportBalance(t *testing.T) {
 	// ACT: Attempt to report balance with identical round.
 	msg := data.EthereumRounds[len(data.EthereumRounds)-1].Msg
 	msg.Signer = owner.Address
-	_, err = server.ReportBalance(goCtx, &msg)
+	_, err = server.ReportBalance(ctx, &msg)
 	// ASSERT: The action should've failed due to identical round.
 	require.ErrorContains(t, err, aggregator.ErrAlreadyReported.Error())
 
@@ -74,7 +73,7 @@ func TestReportBalance(t *testing.T) {
 		TotalSupply: utils.MustParseInt("44285046691709"),
 		NextPrice:   utils.MustParseInt("-1"),
 	}
-	_, err = server.ReportBalance(goCtx, &msg)
+	_, err = server.ReportBalance(ctx, &msg)
 	// ASSERT: The action should've failed due to invalid next price.
 	require.ErrorContains(t, err, aggregator.ErrInvalidNextPrice.Error())
 
@@ -85,9 +84,9 @@ func TestReportBalance(t *testing.T) {
 		Principal:   utils.MustParseInt("4600092532"),
 		Interest:    utils.MustParseInt("658503"),
 		TotalSupply: utils.MustParseInt("44285046691710"),
-		NextPrice:   sdk.ZeroInt(),
+		NextPrice:   math.ZeroInt(),
 	}
-	_, err = server.ReportBalance(goCtx, &msg)
+	_, err = server.ReportBalance(ctx, &msg)
 	// ASSERT: The action should've failed due to invalid next price.
 	require.ErrorContains(t, err, aggregator.ErrInvalidNextPrice.Error())
 
@@ -103,18 +102,17 @@ func TestReportBalance(t *testing.T) {
 		TotalSupply: utils.MustParseInt("44285680550257"),
 		NextPrice:   utils.MustParseInt("103914726"),
 	}
-	_, err = server.ReportBalance(goCtx, &msg)
+	_, err = server.ReportBalance(ctx, &msg)
 	// ASSERT: The action should've failed due to existing round.
 	require.ErrorContains(t, err, aggregator.ErrAlreadyReported.Error())
 }
 
 func TestSetNextPrice(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewAggregatorMsgServer(k)
 
 	// ACT: Attempt to set next price with no owner set.
-	_, err := server.SetNextPrice(goCtx, &aggregator.MsgSetNextPrice{})
+	_, err := server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
 
@@ -123,16 +121,16 @@ func TestSetNextPrice(t *testing.T) {
 	k.SetAggregatorOwner(ctx, owner.Address)
 
 	// ACT: Attempt to set next price with invalid signer.
-	_, err = server.SetNextPrice(goCtx, &aggregator.MsgSetNextPrice{
+	_, err = server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, aggregator.ErrInvalidOwner.Error())
 
 	// ACT: Attempt to set next price with invalid price.
-	_, err = server.SetNextPrice(goCtx, &aggregator.MsgSetNextPrice{
+	_, err = server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{
 		Signer:    owner.Address,
-		NextPrice: sdk.ZeroInt(),
+		NextPrice: math.ZeroInt(),
 	})
 	// ASSERT: The action should've failed due to invalid price.
 	require.ErrorContains(t, err, aggregator.ErrInvalidNextPrice.Error())
@@ -140,7 +138,7 @@ func TestSetNextPrice(t *testing.T) {
 	// ACT: Attempt to set next price.
 	// https://etherscan.io/tx/0xfd21979418ce5e6686c624841f48d11ed241b387b08eb60e2bd361de5ed1a061
 	price := utils.MustParseInt("103780600")
-	_, err = server.SetNextPrice(goCtx, &aggregator.MsgSetNextPrice{
+	_, err = server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{
 		Signer:    owner.Address,
 		NextPrice: price,
 	})
@@ -151,11 +149,10 @@ func TestSetNextPrice(t *testing.T) {
 
 func TestAggregatorTransferOwnership(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewAggregatorMsgServer(k)
 
 	// ACT: Attempt to transfer ownership with no owner set.
-	_, err := server.TransferOwnership(goCtx, &aggregator.MsgTransferOwnership{})
+	_, err := server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
 
@@ -164,14 +161,14 @@ func TestAggregatorTransferOwnership(t *testing.T) {
 	k.SetAggregatorOwner(ctx, owner.Address)
 
 	// ACT: Attempt to transfer ownership with invalid signer.
-	_, err = server.TransferOwnership(goCtx, &aggregator.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, aggregator.ErrInvalidOwner.Error())
 
 	// ACT: Attempt to transfer ownership to same address.
-	_, err = server.TransferOwnership(goCtx, &aggregator.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{
 		Signer:   owner.Address,
 		NewOwner: owner.Address,
 	})
@@ -182,7 +179,7 @@ func TestAggregatorTransferOwnership(t *testing.T) {
 	newOwner := utils.TestAccount()
 
 	// ACT: Attempt to transfer ownership.
-	_, err = server.TransferOwnership(goCtx, &aggregator.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{
 		Signer:   owner.Address,
 		NewOwner: newOwner.Address,
 	})

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/noble-assets/halo/utils"
@@ -16,36 +17,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var ONE = sdk.NewInt(1_000_000)
+var ONE = math.NewInt(1_000_000)
 
 func TestDeposit(t *testing.T) {
 	// This test is based off of a real action on Ethereum.
 	// https://etherscan.io/tx/0x9fc3dc5ec218eea1e84bed8f2a0f2aaf243b355c560ddd30820cf3ea0358fec0
-	amount, expected := sdk.NewInt(202400000), sdk.NewInt(193549970)
+	amount, expected := math.NewInt(202400000), math.NewInt(193549970)
 
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate a user account.
 	user := utils.TestAccount()
 
 	// ACT: Attempt to deposit with an invalid signer address.
-	_, err := server.Deposit(goCtx, &types.MsgDeposit{
+	_, err := server.Deposit(ctx, &types.MsgDeposit{
 		Signer: user.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to deposit without required permissions.
-	_, err = server.Deposit(goCtx, &types.MsgDeposit{
+	_, err = server.Deposit(ctx, &types.MsgDeposit{
 		Signer: user.Address,
 	})
 	// ASSERT: The action should've failed due to invalid permissions.
@@ -56,16 +53,16 @@ func TestDeposit(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
 	k.SetRound(ctx, 229, aggregator.RoundData{
-		Answer:    sdk.NewInt(104572478),
-		Balance:   sdk.NewInt(7016169453),
-		Interest:  sdk.NewInt(1005815),
-		Supply:    sdk.NewInt(67093843285741),
+		Answer:    math.NewInt(104572478),
+		Balance:   math.NewInt(7016169453),
+		Interest:  math.NewInt(1005815),
+		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	k.SetLastRoundId(ctx, 229)
 
 	// ACT: Attempt to deposit with insufficient funds.
-	_, err = server.Deposit(goCtx, &types.MsgDeposit{
+	_, err = server.Deposit(ctx, &types.MsgDeposit{
 		Signer: user.Address,
 		Amount: amount,
 	})
@@ -76,15 +73,15 @@ func TestDeposit(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Underlying, amount))
 
 	// ACT: Attempt to deposit for with a negative amount.
-	_, err = server.Deposit(goCtx, &types.MsgDeposit{
+	_, err = server.Deposit(ctx, &types.MsgDeposit{
 		Signer: user.Address,
-		Amount: sdk.NewInt(-20000),
+		Amount: math.NewInt(-20000),
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
 
 	// ACT: Attempt to deposit.
-	_, err = server.Deposit(goCtx, &types.MsgDeposit{
+	_, err = server.Deposit(ctx, &types.MsgDeposit{
 		Signer: user.Address,
 		Amount: amount,
 	})
@@ -97,31 +94,27 @@ func TestDeposit(t *testing.T) {
 func TestDepositFor(t *testing.T) {
 	// This test is based off of a real action on Ethereum.
 	// https://etherscan.io/tx/0x9fc3dc5ec218eea1e84bed8f2a0f2aaf243b355c560ddd30820cf3ea0358fec0
-	amount, expected := sdk.NewInt(202400000), sdk.NewInt(193549970)
+	amount, expected := math.NewInt(202400000), math.NewInt(193549970)
 
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate user and recipient accounts.
 	user, recipient := utils.TestAccount(), utils.TestAccount()
 
 	// ACT: Attempt to deposit for with an invalid signer address.
-	_, err := server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err := server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer: user.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to deposit for without required permissions.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer: user.Address,
 	})
 	// ASSERT: The action should've failed due to invalid permissions.
@@ -131,7 +124,7 @@ func TestDepositFor(t *testing.T) {
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to deposit for with an invalid recipient address.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Invalid,
 	})
@@ -139,7 +132,7 @@ func TestDepositFor(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode recipient address")
 
 	// ACT: Attempt to deposit for without required recipient permissions.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 	})
@@ -150,7 +143,7 @@ func TestDepositFor(t *testing.T) {
 	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to deposit for with non-existing round.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -161,16 +154,16 @@ func TestDepositFor(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
 	k.SetRound(ctx, 229, aggregator.RoundData{
-		Answer:    sdk.NewInt(104572478),
-		Balance:   sdk.NewInt(7016169453),
-		Interest:  sdk.NewInt(1005815),
-		Supply:    sdk.NewInt(67093843285741),
+		Answer:    math.NewInt(104572478),
+		Balance:   math.NewInt(7016169453),
+		Interest:  math.NewInt(1005815),
+		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	k.SetLastRoundId(ctx, 229)
 
 	// ACT: Attempt to deposit for with insufficient funds.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -179,10 +172,10 @@ func TestDepositFor(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
 	// ACT: Attempt to deposit for with a negative amount.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
-		Amount:    sdk.NewInt(-202400000),
+		Amount:    math.NewInt(-202400000),
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
@@ -192,7 +185,7 @@ func TestDepositFor(t *testing.T) {
 	bank.Balances[recipient.Address] = sdk.Coins{}
 
 	// ACT: Attempt to deposit for.
-	_, err = server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -205,16 +198,12 @@ func TestDepositFor(t *testing.T) {
 }
 
 func TestDepositForWithRestrictions(t *testing.T) {
-	amount := sdk.NewInt(202400000)
+	amount := math.NewInt(202400000)
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate user and recipient accounts.
@@ -228,10 +217,10 @@ func TestDepositForWithRestrictions(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
 	k.SetRound(ctx, 229, aggregator.RoundData{
-		Answer:    sdk.NewInt(104572478),
-		Balance:   sdk.NewInt(7016169453),
-		Interest:  sdk.NewInt(1005815),
-		Supply:    sdk.NewInt(67093843285741),
+		Answer:    math.NewInt(104572478),
+		Balance:   math.NewInt(7016169453),
+		Interest:  math.NewInt(1005815),
+		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	k.SetLastRoundId(ctx, 229)
@@ -241,7 +230,7 @@ func TestDepositForWithRestrictions(t *testing.T) {
 	bank.Balances[recipient.Address] = sdk.Coins{}
 
 	// ACT: Attempt to deposit for.
-	_, err := server.DepositFor(goCtx, &types.MsgDepositFor{
+	_, err := server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -253,34 +242,30 @@ func TestDepositForWithRestrictions(t *testing.T) {
 func TestWithdraw(t *testing.T) {
 	// This test is based off of a real action on Ethereum.
 	// https://etherscan.io/tx/0x325e6d83a4f1067db2a872e8e2a10a1bff79a2a8047db49a6ce080733b6a1159
-	amount, expected := sdk.NewInt(150634259038), sdk.NewInt(154924310000)
+	amount, expected := math.NewInt(150634259038), math.NewInt(154924310000)
 
 	account := mocks.AccountKeeper{
-		Accounts: make(map[string]authtypes.AccountI),
+		Accounts: make(map[string]sdk.AccountI),
 	}
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate a user account.
 	user := utils.TestAccount()
 
 	// ACT: Attempt to withdraw with an invalid signer address.
-	_, err := server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err := server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer: user.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to withdraw without required permissions.
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer: user.Address,
 	})
 	// ASSERT: The action should've failed due to invalid permissions.
@@ -301,7 +286,7 @@ func TestWithdraw(t *testing.T) {
 	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw without owner public key in state.
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
 		Amount:    amount,
 		Signature: signature,
@@ -315,7 +300,7 @@ func TestWithdraw(t *testing.T) {
 	}
 
 	// ACT: Attempt to withdraw with invalid signature (nonce mismatch).
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
 		Amount:    amount,
 		Signature: signature,
@@ -328,16 +313,16 @@ func TestWithdraw(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
 	k.SetRound(ctx, 139, aggregator.RoundData{
-		Answer:    sdk.NewInt(102847997),
-		Balance:   sdk.NewInt(4986480452),
-		Interest:  sdk.NewInt(708258),
-		Supply:    sdk.NewInt(48483293336746),
+		Answer:    math.NewInt(102847997),
+		Balance:   math.NewInt(4986480452),
+		Interest:  math.NewInt(708258),
+		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	k.SetLastRoundId(ctx, 139)
 
 	// ACT: Attempt to withdraw with insufficient funds.
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
 		Amount:    amount,
 		Signature: signature,
@@ -351,7 +336,7 @@ func TestWithdraw(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 
 	// ACT: Attempt to withdraw with insufficient module funds.
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
 		Amount:    amount,
 		Signature: signature,
@@ -367,7 +352,7 @@ func TestWithdraw(t *testing.T) {
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, expected))
 
 	// ACT: Attempt to withdraw.
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
 		Amount:    amount,
 		Signature: signature,
@@ -381,12 +366,12 @@ func TestWithdraw(t *testing.T) {
 	negativeSignature, _ := owner.Key.Sign([]byte(fmt.Sprintf(
 		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
 		base64.StdEncoding.EncodeToString(user.Bytes),
-		sdk.NewInt(-200).String(),
+		math.NewInt(-200).String(),
 		11,
 	)))
-	_, err = server.Withdraw(goCtx, &types.MsgWithdraw{
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
 		Signer:    user.Address,
-		Amount:    sdk.NewInt(-200),
+		Amount:    math.NewInt(-200),
 		Signature: negativeSignature,
 	})
 	// ASSERT: The action should've failed due to invalid amount.
@@ -396,34 +381,30 @@ func TestWithdraw(t *testing.T) {
 func TestWithdrawTo(t *testing.T) {
 	// This test is based off of a real action on Ethereum.
 	// https://etherscan.io/tx/0x325e6d83a4f1067db2a872e8e2a10a1bff79a2a8047db49a6ce080733b6a1159
-	amount, expected := sdk.NewInt(150634259038), sdk.NewInt(154924310000)
+	amount, expected := math.NewInt(150634259038), math.NewInt(154924310000)
 
 	account := mocks.AccountKeeper{
-		Accounts: make(map[string]authtypes.AccountI),
+		Accounts: make(map[string]sdk.AccountI),
 	}
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, account, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate user and recipient accounts.
 	user, recipient := utils.TestAccount(), utils.TestAccount()
 
 	// ACT: Attempt to withdraw to with an invalid signer address.
-	_, err := server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err := server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer: user.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to withdraw to without required permissions.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer: user.Address,
 	})
 	// ASSERT: The action should've failed due to invalid permissions.
@@ -433,7 +414,7 @@ func TestWithdrawTo(t *testing.T) {
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to withdraw to with an invalid recipient address.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Invalid,
 	})
@@ -441,7 +422,7 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode recipient address")
 
 	// ACT: Attempt to withdraw to without required recipient permissions.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 	})
@@ -463,7 +444,7 @@ func TestWithdrawTo(t *testing.T) {
 	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to without owner public key in state.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -478,7 +459,7 @@ func TestWithdrawTo(t *testing.T) {
 	}
 
 	// ACT: Attempt to withdraw to with invalid signature (nonce mismatch).
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -491,7 +472,7 @@ func TestWithdrawTo(t *testing.T) {
 	k.SetNonce(ctx, recipient.Bytes, 10)
 
 	// ACT: Attempt to withdraw to with non-existing last round.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -503,10 +484,10 @@ func TestWithdrawTo(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
 	k.SetRound(ctx, 139, aggregator.RoundData{
-		Answer:    sdk.NewInt(102847997),
-		Balance:   sdk.NewInt(4986480452),
-		Interest:  sdk.NewInt(708258),
-		Supply:    sdk.NewInt(48483293336746),
+		Answer:    math.NewInt(102847997),
+		Balance:   math.NewInt(4986480452),
+		Interest:  math.NewInt(708258),
+		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	k.SetLastRoundId(ctx, 139)
@@ -515,7 +496,7 @@ func TestWithdrawTo(t *testing.T) {
 	k.SetNonce(ctx, recipient.Bytes, 10)
 
 	// ACT: Attempt to withdraw to with insufficient funds.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -530,7 +511,7 @@ func TestWithdrawTo(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 
 	// ACT: Attempt to withdraw to with insufficient module funds.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -547,7 +528,7 @@ func TestWithdrawTo(t *testing.T) {
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, expected))
 
 	// ACT: Attempt to withdraw to.
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -563,13 +544,13 @@ func TestWithdrawTo(t *testing.T) {
 	negativeSignature, _ := owner.Key.Sign([]byte(fmt.Sprintf(
 		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
 		base64.StdEncoding.EncodeToString(recipient.Bytes),
-		sdk.NewInt(-200).String(),
+		math.NewInt(-200).String(),
 		11,
 	)))
-	_, err = server.WithdrawTo(goCtx, &types.MsgWithdrawTo{
+	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
-		Amount:    sdk.NewInt(-200),
+		Amount:    math.NewInt(-200),
 		Signature: negativeSignature,
 	})
 	// ASSERT: The action should've failed due to invalid amount.
@@ -579,17 +560,13 @@ func TestWithdrawTo(t *testing.T) {
 func TestWithdrawToAdmin(t *testing.T) {
 	// This test is based off of a real action on Ethereum.
 	// https://etherscan.io/tx/0x325e6d83a4f1067db2a872e8e2a10a1bff79a2a8047db49a6ce080733b6a1159
-	amount, expected := sdk.NewInt(150634259038), sdk.NewInt(154924310000)
+	amount, expected := math.NewInt(150634259038), math.NewInt(154924310000)
 
 	bank := mocks.BankKeeper{
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate admin, user and recipient accounts.
@@ -599,21 +576,21 @@ func TestWithdrawToAdmin(t *testing.T) {
 	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to withdraw to admin with an invalid signer address.
-	_, err := server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err := server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer: utils.TestAccount().Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to withdraw to admin with an invalid signer.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, types.ErrInvalidFundAdmin.Error())
 
 	// ACT: Attempt to withdraw to admin with an invalid from address.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer: admin.Address,
 		From:   user.Invalid,
 	})
@@ -621,7 +598,7 @@ func TestWithdrawToAdmin(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode from address")
 
 	// ACT: Attempt to withdraw to admin with an invalid recipient address.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer:    admin.Address,
 		From:      user.Address,
 		Recipient: recipient.Invalid,
@@ -632,16 +609,16 @@ func TestWithdrawToAdmin(t *testing.T) {
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
 	k.SetRound(ctx, 139, aggregator.RoundData{
-		Answer:    sdk.NewInt(102847997),
-		Balance:   sdk.NewInt(4986480452),
-		Interest:  sdk.NewInt(708258),
-		Supply:    sdk.NewInt(48483293336746),
+		Answer:    math.NewInt(102847997),
+		Balance:   math.NewInt(4986480452),
+		Interest:  math.NewInt(708258),
+		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	k.SetLastRoundId(ctx, 139)
 
 	// ACT: Attempt to withdraw to admin with insufficient funds.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer:    admin.Address,
 		From:      user.Address,
 		Recipient: recipient.Address,
@@ -654,7 +631,7 @@ func TestWithdrawToAdmin(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 
 	// ACT: Attempt to withdraw to admin with insufficient module funds.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer:    admin.Address,
 		From:      user.Address,
 		Recipient: recipient.Address,
@@ -669,7 +646,7 @@ func TestWithdrawToAdmin(t *testing.T) {
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, expected))
 
 	// ACT: Attempt to withdraw to admin.
-	_, err = server.WithdrawToAdmin(goCtx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer:    admin.Address,
 		From:      user.Address,
 		Recipient: recipient.Address,
@@ -687,22 +664,21 @@ func TestBurn(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate a user account.
 	user := utils.TestAccount()
 
 	// ACT: Attempt to burn with an invalid signer address.
-	_, err := server.Burn(goCtx, &types.MsgBurn{
+	_, err := server.Burn(ctx, &types.MsgBurn{
 		Signer: user.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to burn without required permissions.
-	_, err = server.Burn(goCtx, &types.MsgBurn{
+	_, err = server.Burn(ctx, &types.MsgBurn{
 		Signer: user.Address,
 	})
 	// ASSERT: The action should've failed due to invalid permissions.
@@ -712,7 +688,7 @@ func TestBurn(t *testing.T) {
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to burn with insufficient funds.
-	_, err = server.Burn(goCtx, &types.MsgBurn{
+	_, err = server.Burn(ctx, &types.MsgBurn{
 		Signer: user.Address,
 		Amount: ONE,
 	})
@@ -720,9 +696,9 @@ func TestBurn(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
 	// ACT: Attempt to burn with negative amount.
-	_, err = server.Burn(goCtx, &types.MsgBurn{
+	_, err = server.Burn(ctx, &types.MsgBurn{
 		Signer: user.Address,
-		Amount: sdk.NewInt(-1_000_000),
+		Amount: math.NewInt(-1_000_000),
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
@@ -731,7 +707,7 @@ func TestBurn(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
 	// ACT: Attempt to burn.
-	_, err = server.Burn(goCtx, &types.MsgBurn{
+	_, err = server.Burn(ctx, &types.MsgBurn{
 		Signer: user.Address,
 		Amount: ONE,
 	})
@@ -746,8 +722,7 @@ func TestBurnFor(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate admin and user accounts.
@@ -756,21 +731,21 @@ func TestBurnFor(t *testing.T) {
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to burn for with an invalid signer address.
-	_, err := server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err := server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to burn for with an invalid signer.
-	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, types.ErrInvalidFundAdmin.Error())
 
 	// ACT: Attempt to burn for with an invalid from address.
-	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Address,
 		From:   user.Invalid,
 	})
@@ -778,7 +753,7 @@ func TestBurnFor(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode from address")
 
 	// ACT: Attempt to burn for with insufficient funds.
-	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Address,
 		From:   user.Address,
 		Amount: ONE,
@@ -790,16 +765,16 @@ func TestBurnFor(t *testing.T) {
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
 	// ACT: Attempt to burn for with negative amount.
-	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Address,
 		From:   user.Address,
-		Amount: sdk.NewInt(-1_000_000),
+		Amount: math.NewInt(-1_000_000),
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
 
 	// ACT: Attempt to burn.
-	_, err = server.BurnFor(goCtx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Address,
 		From:   user.Address,
 		Amount: ONE,
@@ -815,8 +790,7 @@ func TestMint(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, mocks.FTFKeeper{})
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate admin and user accounts.
@@ -825,21 +799,21 @@ func TestMint(t *testing.T) {
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 
 	// ACT: Attempt to mint with an invalid signer address.
-	_, err := server.Mint(goCtx, &types.MsgMint{
+	_, err := server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to mint with an invalid signer.
-	_, err = server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, types.ErrInvalidFundAdmin.Error())
 
 	// ACT: Attempt to mint with an invalid to address.
-	_, err = server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     user.Invalid,
 	})
@@ -847,7 +821,7 @@ func TestMint(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode to address")
 
 	// ACT: Attempt to mint without required permissions.
-	_, err = server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     utils.TestAccount().Address,
 	})
@@ -855,16 +829,16 @@ func TestMint(t *testing.T) {
 	require.ErrorContains(t, err, "cannot transfer")
 
 	// ACT: Attempt to mint with negative amount.
-	_, err = server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     user.Address,
-		Amount: sdk.NewInt(-1_000_000),
+		Amount: math.NewInt(-1_000_000),
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
 
 	// ACT: Attempt to mint.
-	_, err = server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     user.Address,
 		Amount: ONE,
@@ -880,11 +854,7 @@ func TestMintWithRestrictions(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.FailingSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate admin and user accounts.
@@ -892,10 +862,10 @@ func TestMintWithRestrictions(t *testing.T) {
 	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
 	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
 	// ACT: Attempt to mint with send restrictions.
-	_, err := server.Mint(goCtx, &types.MsgMint{
+	_, err := server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     user.Address,
-		Amount: sdk.NewInt(1_000_000),
+		Amount: math.NewInt(1_000_000),
 	})
 	// ASSERT: The action should've failed due to restrictions.
 	require.ErrorContains(t, err, "unable to transfer from module to account")
@@ -906,25 +876,21 @@ func TestTradeToFiat(t *testing.T) {
 		Balances:    make(map[string]sdk.Coins),
 		Restriction: mocks.NoOpSendRestrictionFn,
 	}
-	ftf := mocks.FTFKeeper{
-		Paused: false,
-	}
-	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank, ftf)
-	goCtx := sdk.WrapSDKContext(ctx)
+	k, ctx := mocks.HaloKeeperWithKeepers(t, mocks.AccountKeeper{}, bank)
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Generate an admin account.
 	admin := utils.TestAccount()
 
 	// ACT: Attempt to trade to fiat with an invalid signer address.
-	_, err := server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err := server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer: admin.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
 	require.ErrorContains(t, err, "unable to decode signer address")
 
 	// ACT: Attempt to trade to fiat with an invalid signer.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer: admin.Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
@@ -934,7 +900,7 @@ func TestTradeToFiat(t *testing.T) {
 	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
 
 	// ACT: Attempt to trade to fiat with an invalid recipient address.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Recipient: admin.Invalid,
 	})
@@ -942,7 +908,7 @@ func TestTradeToFiat(t *testing.T) {
 	require.ErrorContains(t, err, "unable to decode recipient address")
 
 	// ACT: Attempt to trade to fiat with invalid recipient permissions.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Recipient: admin.Address,
 	})
@@ -953,7 +919,7 @@ func TestTradeToFiat(t *testing.T) {
 	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_LIQUIDITY_PROVIDER, true)
 
 	// ACT: Attempt to trade to fiat with insufficient funds.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Amount:    ONE,
 		Recipient: admin.Address,
@@ -965,16 +931,16 @@ func TestTradeToFiat(t *testing.T) {
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, ONE))
 
 	// ACT: Attempt to trade to fiat with negative amount.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
-		Amount:    sdk.NewInt(-1_000_000),
+		Amount:    math.NewInt(-1_000_000),
 		Recipient: admin.Address,
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
 
 	// ACT: Attempt to trade to fiat.
-	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
+	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Amount:    ONE,
 		Recipient: admin.Address,
@@ -987,11 +953,10 @@ func TestTradeToFiat(t *testing.T) {
 
 func TestTransferOwnership(t *testing.T) {
 	k, ctx := mocks.HaloKeeper(t)
-	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
 	// ACT: Attempt to transfer ownership with no owner set.
-	_, err := server.TransferOwnership(goCtx, &types.MsgTransferOwnership{})
+	_, err := server.TransferOwnership(ctx, &types.MsgTransferOwnership{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, types.ErrNoOwner.Error())
 
@@ -1000,14 +965,14 @@ func TestTransferOwnership(t *testing.T) {
 	k.SetOwner(ctx, owner.Address)
 
 	// ACT: Attempt to transfer ownership with invalid signer.
-	_, err = server.TransferOwnership(goCtx, &types.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, types.ErrInvalidOwner.Error())
 
 	// ACT: Attempt to transfer ownership to same address.
-	_, err = server.TransferOwnership(goCtx, &types.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{
 		Signer:   owner.Address,
 		NewOwner: owner.Address,
 	})
@@ -1018,7 +983,7 @@ func TestTransferOwnership(t *testing.T) {
 	newOwner := utils.TestAccount()
 
 	// ACT: Attempt to transfer ownership.
-	_, err = server.TransferOwnership(goCtx, &types.MsgTransferOwnership{
+	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{
 		Signer:   owner.Address,
 		NewOwner: newOwner.Address,
 	})

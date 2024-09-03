@@ -1,14 +1,14 @@
 package data
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/noble-assets/halo/utils"
 	"github.com/noble-assets/halo/x/halo/types/aggregator"
 )
 
 var EthereumRounds = []struct {
 	Msg    aggregator.MsgReportBalance
-	Answer sdk.Int
+	Answer math.Int
 }{
 	{
 		// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428

@@ -1,8 +1,8 @@
 package utils
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import "cosmossdk.io/math"
 
-func MustParseInt(s string) sdk.Int {
-	res, _ := sdk.NewIntFromString(s)
+func MustParseInt(s string) math.Int {
+	res, _ := math.NewIntFromString(s)
 	return res
 }

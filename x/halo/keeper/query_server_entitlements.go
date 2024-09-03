@@ -3,8 +3,9 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/errors"
+	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/noble-assets/halo/x/halo/types/entitlements"
 )
 
@@ -18,60 +19,50 @@ func NewEntitlementsQueryServer(keeper *Keeper) entitlements.QueryServer {
 	return &entitlementsQueryServer{Keeper: keeper}
 }
 
-func (k entitlementsQueryServer) Owner(goCtx context.Context, req *entitlements.QueryOwner) (*entitlements.QueryOwnerResponse, error) {
+func (k entitlementsQueryServer) Owner(ctx context.Context, req *entitlements.QueryOwner) (*entitlements.QueryOwnerResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &entitlements.QueryOwnerResponse{
 		Owner: k.GetEntitlementsOwner(ctx),
 	}, nil
 }
 
-func (k entitlementsQueryServer) Paused(goCtx context.Context, req *entitlements.QueryPaused) (*entitlements.QueryPausedResponse, error) {
+func (k entitlementsQueryServer) Paused(ctx context.Context, req *entitlements.QueryPaused) (*entitlements.QueryPausedResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &entitlements.QueryPausedResponse{
 		Paused: k.GetPaused(ctx),
 	}, nil
 }
 
-func (k entitlementsQueryServer) PublicCapability(goCtx context.Context, req *entitlements.QueryPublicCapability) (*entitlements.QueryPublicCapabilityResponse, error) {
+func (k entitlementsQueryServer) PublicCapability(ctx context.Context, req *entitlements.QueryPublicCapability) (*entitlements.QueryPublicCapabilityResponse, error) {
 	if req == nil || req.Method == "" {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &entitlements.QueryPublicCapabilityResponse{
 		Enabled: k.IsPublicCapability(ctx, req.Method),
 	}, nil
 }
 
-func (k entitlementsQueryServer) RoleCapability(goCtx context.Context, req *entitlements.QueryRoleCapability) (*entitlements.QueryRoleCapabilityResponse, error) {
+func (k entitlementsQueryServer) RoleCapability(ctx context.Context, req *entitlements.QueryRoleCapability) (*entitlements.QueryRoleCapabilityResponse, error) {
 	if req == nil || req.Method == "" {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	return &entitlements.QueryRoleCapabilityResponse{
 		Roles: k.GetCapabilityRoles(ctx, req.Method),
 	}, nil
 }
 
-func (k entitlementsQueryServer) UserCapability(goCtx context.Context, req *entitlements.QueryUserCapability) (*entitlements.QueryUserCapabilityResponse, error) {
+func (k entitlementsQueryServer) UserCapability(ctx context.Context, req *entitlements.QueryUserCapability) (*entitlements.QueryUserCapabilityResponse, error) {
 	if req == nil {
-		return nil, errors.ErrInvalidRequest
+		return nil, errorstypes.ErrInvalidRequest
 	}
-
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	address, err := sdk.AccAddressFromBech32(req.Address)
 	if err != nil {
