@@ -1,0 +1,1 @@
+- Ensure the recipient is a liquidity provider when trading to fiat. ([#8](https://github.com/noble-assets/halo/pull/8))
