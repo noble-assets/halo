@@ -913,8 +913,8 @@ func TestTradeToFiat(t *testing.T) {
 	goCtx := sdk.WrapSDKContext(ctx)
 	server := keeper.NewMsgServer(k)
 
-	// ARRANGE: Generate an admin account.
-	admin := utils.TestAccount()
+	// ARRANGE: Generate an admin and recipient account.
+	admin, recipient := utils.TestAccount(), utils.TestAccount()
 
 	// ACT: Attempt to trade to fiat with an invalid signer address.
 	_, err := server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
@@ -936,7 +936,7 @@ func TestTradeToFiat(t *testing.T) {
 	// ACT: Attempt to trade to fiat with an invalid recipient address.
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
-		Recipient: admin.Invalid,
+		Recipient: recipient.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid recipient address.
 	require.ErrorContains(t, err, "unable to decode recipient address")
@@ -944,19 +944,19 @@ func TestTradeToFiat(t *testing.T) {
 	// ACT: Attempt to trade to fiat with invalid recipient permissions.
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
-		Recipient: admin.Address,
+		Recipient: recipient.Address,
 	})
 	// ASSERT: The action should've failed due to invalid recipient permissions.
 	require.ErrorContains(t, err, types.ErrInvalidLiquidityProvider.Error())
 
 	// ARRANGE: Set liquidity provider in state.
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_LIQUIDITY_PROVIDER, true)
+	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_LIQUIDITY_PROVIDER, true)
 
 	// ACT: Attempt to trade to fiat with insufficient funds.
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Amount:    ONE,
-		Recipient: admin.Address,
+		Recipient: recipient.Address,
 	})
 	// ASSERT: The action should've failed due to insufficient funds.
 	require.ErrorContains(t, err, "insufficient funds")
@@ -968,7 +968,7 @@ func TestTradeToFiat(t *testing.T) {
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Amount:    sdk.NewInt(-1_000_000),
-		Recipient: admin.Address,
+		Recipient: recipient.Address,
 	})
 	// ASSERT: The action should've failed due to invalid amount.
 	require.ErrorContains(t, err, "invalid amount")
@@ -977,11 +977,11 @@ func TestTradeToFiat(t *testing.T) {
 	_, err = server.TradeToFiat(goCtx, &types.MsgTradeToFiat{
 		Signer:    admin.Address,
 		Amount:    ONE,
-		Recipient: admin.Address,
+		Recipient: recipient.Address,
 	})
 	// ASSERT: The action should've succeeded.
 	require.NoError(t, err)
-	require.Equal(t, ONE, bank.Balances[admin.Address].AmountOf(k.Underlying))
+	require.Equal(t, ONE, bank.Balances[recipient.Address].AmountOf(k.Underlying))
 	require.True(t, bank.Balances[types.ModuleName].IsZero())
 }
 
