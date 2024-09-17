@@ -304,6 +304,16 @@ func (AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 		Query: &autocliv1.ServiceCommandDescriptor{
 			Service:           halov1.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
+			SubCommands: map[string]*autocliv1.ServiceCommandDescriptor{
+				"aggregator": {
+					Service: aggregatorv1.Query_ServiceDesc.ServiceName,
+					RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
+				},
+				"entitlements": {
+					Service: entitlementsv1.Query_ServiceDesc.ServiceName,
+					RpcCommandOptions: []*autocliv1.RpcCommandOptions{},
+				},
+			},
 		},
 	}
 }
