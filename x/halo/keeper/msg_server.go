@@ -231,7 +231,7 @@ func (k msgServer) TradeToFiat(goCtx context.Context, msg *types.MsgTradeToFiat)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode recipient address %s", msg.Recipient)
 	}
-	if !k.HasRole(ctx, signer, entitlements.ROLE_LIQUIDITY_PROVIDER) {
+	if !k.HasRole(ctx, recipient, entitlements.ROLE_LIQUIDITY_PROVIDER) {
 		return nil, types.ErrInvalidLiquidityProvider
 	}
 	if !msg.Amount.IsPositive() {
