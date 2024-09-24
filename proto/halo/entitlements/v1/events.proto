@@ -4,7 +4,7 @@ package halo.entitlements.v1;
 
 import "halo/entitlements/v1/entitlements.proto";
 
-option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+option go_package = "github.com/noble-assets/halo/v2/types/entitlements";
 
 message PublicCapabilityUpdated {
   string method = 1;

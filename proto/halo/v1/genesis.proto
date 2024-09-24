@@ -7,7 +7,7 @@ import "gogoproto/gogo.proto";
 import "halo/aggregator/v1/genesis.proto";
 import "halo/entitlements/v1/genesis.proto";
 
-option go_package = "github.com/noble-assets/halo/x/halo/types";
+option go_package = "github.com/noble-assets/halo/v2/types";
 
 message GenesisState {
   // aggregator_state is the genesis state of the aggregator submodule.

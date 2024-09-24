@@ -13,9 +13,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	"github.com/noble-assets/halo/x/halo"
-	"github.com/noble-assets/halo/x/halo/keeper"
-	"github.com/noble-assets/halo/x/halo/types"
+	"github.com/noble-assets/halo/v2"
+	"github.com/noble-assets/halo/v2/keeper"
+	"github.com/noble-assets/halo/v2/types"
 )
 
 func HaloKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {

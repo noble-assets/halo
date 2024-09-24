@@ -3,10 +3,11 @@ package mocks
 import (
 	"context"
 
+	"github.com/noble-assets/halo/v2/types"
+
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/codec"
-	"github.com/noble-assets/halo/x/halo/types"
 )
 
 var _ types.AccountKeeper = AccountKeeper{}

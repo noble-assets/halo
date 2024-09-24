@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "halo/aggregator/v1/aggregator.proto";
 
-option go_package = "github.com/noble-assets/halo/x/halo/types/aggregator";
+option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
 
 message GenesisState {
   string owner = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];

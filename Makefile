@@ -1,4 +1,4 @@
-.PHONY: proto-format proto-lint proto-gen format lint test-unit build
+.PHONY: proto-format proto-lint proto-breaking proto-gen format lint test-unit build
 all: proto-all format lint test-unit build
 
 ###############################################################################
@@ -11,7 +11,7 @@ build:
 	@echo "✅ Completed build!"
 
 ###############################################################################
-###                          Formatting & Linting                           ###
+###                                 Tooling                                 ###
 ###############################################################################
 
 gofumpt_cmd=mvdan.cc/gofumpt
@@ -31,10 +31,10 @@ lint:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-BUF_VERSION=1.39
-BUILDER_VERSION=0.15.0
+BUF_VERSION=1.42
+BUILDER_VERSION=0.15.1
 
-proto-all: proto-format proto-lint proto-gen
+proto-all: proto-format proto-lint proto-breaking proto-gen
 
 proto-format:
 	@echo "🤖 Running protobuf formatter..."
@@ -54,11 +54,17 @@ proto-lint:
 		bufbuild/buf:$(BUF_VERSION) lint
 	@echo "✅ Completed protobuf linting!"
 
+proto-breaking:
+	@echo "🤖 Running protobuf breaking checks..."
+	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
+		bufbuild/buf:$(BUF_VERSION) breaking --against "https://github.com/noble-assets/halo.git#branch=v1.0.1"
+	@echo "✅ Completed protobuf breaking checks!"
+
 ###############################################################################
 ###                                 Testing                                 ###
 ###############################################################################
 
 test-unit:
 	@echo "🤖 Running unit tests..."
-	@go test -cover -coverprofile=coverage.out -race -v ./x/halo/keeper/...
+	@go test -cover -coverprofile=coverage.out -race -v ./keeper/...
 	@echo "✅ Completed unit tests!"

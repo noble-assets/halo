@@ -4,7 +4,7 @@ package halo.entitlements.v1;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/noble-assets/halo/x/halo/types/entitlements";
+option go_package = "github.com/noble-assets/halo/v2/types/entitlements";
 
 enum Role {
   option (gogoproto.goproto_enum_prefix) = false;

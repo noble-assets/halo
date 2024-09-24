@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/noble-assets/halo/v2/types"
+
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/noble-assets/halo/x/halo/types"
 )
 
 var _ types.BankKeeper = BankKeeper{}
