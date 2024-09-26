@@ -18,8 +18,10 @@ func TestGetNonces(t *testing.T) {
 
 	// ARRANGE: Set nonces in state.
 	user1, user2 := utils.TestAccount(), utils.TestAccount()
-	keeper.SetNonce(ctx, user1.Bytes, 1)
-	keeper.SetNonce(ctx, user2.Bytes, 2)
+	err := keeper.SetNonce(ctx, user1.Bytes, 1)
+	require.NoError(t, err)
+	err = keeper.SetNonce(ctx, user2.Bytes, 2)
+	require.NoError(t, err)
 
 	// ACT: Retrieve all nonces.
 	nonces = keeper.GetNonces(ctx)

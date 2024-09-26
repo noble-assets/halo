@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -49,17 +50,20 @@ func TestDeposit(t *testing.T) {
 	require.ErrorContains(t, err, "cannot execute /halo.v1.MsgDeposit")
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.SetRound(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
 		Balance:   math.NewInt(7016169453),
 		Interest:  math.NewInt(1005815),
 		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
-	k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
 
 	// ACT: Attempt to deposit with insufficient funds.
 	_, err = server.Deposit(ctx, &types.MsgDeposit{
@@ -121,7 +125,8 @@ func TestDepositFor(t *testing.T) {
 	require.ErrorContains(t, err, "cannot execute /halo.v1.MsgDepositFor")
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to deposit for with an invalid recipient address.
 	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
@@ -140,7 +145,8 @@ func TestDepositFor(t *testing.T) {
 	require.ErrorContains(t, err, "cannot receive uusyc")
 
 	// ARRANGE: Assign the international feeder role to recipient.
-	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to deposit for with non-existing round.
 	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
@@ -153,14 +159,16 @@ func TestDepositFor(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.SetRound(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
 		Balance:   math.NewInt(7016169453),
 		Interest:  math.NewInt(1005815),
 		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
-	k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
 
 	// ACT: Attempt to deposit for with insufficient funds.
 	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
@@ -210,27 +218,31 @@ func TestDepositForWithRestrictions(t *testing.T) {
 	user, recipient := utils.TestAccount(), utils.TestAccount()
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err := k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 	// ARRANGE: Assign the international feeder role to recipient.
-	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.SetRound(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
 		Balance:   math.NewInt(7016169453),
 		Interest:  math.NewInt(1005815),
 		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
-	k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 229)
+	require.NoError(t, err)
 
 	// ARRANGE: Give user 202.40 $USDC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Underlying, amount))
 	bank.Balances[recipient.Address] = sdk.Coins{}
 
 	// ACT: Attempt to deposit for.
-	_, err := server.DepositFor(ctx, &types.MsgDepositFor{
+	_, err = server.DepositFor(ctx, &types.MsgDepositFor{
 		Signer:    user.Address,
 		Recipient: recipient.Address,
 		Amount:    amount,
@@ -272,10 +284,12 @@ func TestWithdraw(t *testing.T) {
 	require.ErrorContains(t, err, "cannot execute /halo.v1.MsgWithdraw")
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 	// ARRANGE: Generate an owner account.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 	// ARRANGE: Generate a withdrawal signature
 	signature, err := owner.Key.Sign([]byte(fmt.Sprintf(
 		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
@@ -309,17 +323,20 @@ func TestWithdraw(t *testing.T) {
 	require.ErrorContains(t, err, types.ErrInvalidSignature.Error())
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, user.Bytes, 10)
+	err = k.SetNonce(ctx, user.Bytes, 10)
+	require.NoError(t, err)
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.SetRound(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
 		Balance:   math.NewInt(4986480452),
 		Interest:  math.NewInt(708258),
 		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
-	k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw with insufficient funds.
 	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
@@ -331,7 +348,8 @@ func TestWithdraw(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, user.Bytes, 10)
+	err = k.SetNonce(ctx, user.Bytes, 10)
+	require.NoError(t, err)
 	// ARRANGE: Give user 150,634.259038 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 
@@ -345,11 +363,29 @@ func TestWithdraw(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from module to account")
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, user.Bytes, 10)
+	err = k.SetNonce(ctx, user.Bytes, 10)
+	require.NoError(t, err)
 	// ARRANGE: Give user 150,634.259038 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 	// ARRANGE: Give module 154,924.31 $USDC.
 	bank.Balances[types.ModuleAddress.String()] = sdk.NewCoins(sdk.NewCoin(k.Underlying, expected))
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.Nonces
+	k.Nonces = collections.NewMap(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		types.NoncePrefix, "nonces", collections.BytesKey, collections.Uint64Value,
+	)
+
+	// ACT: Attempt to withdraw with failing Nonces collection store.
+	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
+		Signer:    user.Address,
+		Amount:    amount,
+		Signature: signature,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.Nonces = tmp
 
 	// ACT: Attempt to withdraw.
 	_, err = server.Withdraw(ctx, &types.MsgWithdraw{
@@ -411,7 +447,8 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, "cannot execute /halo.v1.MsgWithdrawTo")
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to with an invalid recipient address.
 	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
@@ -430,10 +467,12 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, "cannot receive uusyc")
 
 	// ARRANGE: Assign the international feeder role to recipient.
-	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 	// ARRANGE: Generate an owner account.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 	// ARRANGE: Generate a withdrawal signature
 	signature, err := owner.Key.Sign([]byte(fmt.Sprintf(
 		"{\"halo_withdraw\":{\"recipient\":\"%s\",\"amount\":\"%s\",\"nonce\":%d}}",
@@ -469,7 +508,8 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, types.ErrInvalidSignature.Error())
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, recipient.Bytes, 10)
+	err = k.SetNonce(ctx, recipient.Bytes, 10)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to with non-existing last round.
 	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
@@ -483,17 +523,20 @@ func TestWithdrawTo(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.SetRound(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
 		Balance:   math.NewInt(4986480452),
 		Interest:  math.NewInt(708258),
 		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
-	k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, recipient.Bytes, 10)
+	err = k.SetNonce(ctx, recipient.Bytes, 10)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to with insufficient funds.
 	_, err = server.WithdrawTo(ctx, &types.MsgWithdrawTo{
@@ -506,7 +549,8 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from account to module")
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, recipient.Bytes, 10)
+	err = k.SetNonce(ctx, recipient.Bytes, 10)
+	require.NoError(t, err)
 	// ARRANGE: Give user 150,634.259038 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 
@@ -521,7 +565,8 @@ func TestWithdrawTo(t *testing.T) {
 	require.ErrorContains(t, err, "unable to transfer from module to account")
 
 	// ARRANGE: Set user withdrawal nonce in state.
-	k.SetNonce(ctx, recipient.Bytes, 10)
+	err = k.SetNonce(ctx, recipient.Bytes, 10)
+	require.NoError(t, err)
 	// ARRANGE: Give user 150,634.259038 $USYC.
 	bank.Balances[user.Address] = sdk.NewCoins(sdk.NewCoin(k.Denom, amount))
 	// ARRANGE: Give module 154,924.31 $USDC.
@@ -571,12 +616,15 @@ func TestWithdrawToAdmin(t *testing.T) {
 
 	// ARRANGE: Generate admin, user and recipient accounts.
 	admin, user, recipient := utils.TestAccount(), utils.TestAccount(), utils.TestAccount()
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
-	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err := k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	require.NoError(t, err)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
+	err = k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to admin with an invalid signer address.
-	_, err := server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
+	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
 		Signer: utils.TestAccount().Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
@@ -608,14 +656,16 @@ func TestWithdrawToAdmin(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.SetRound(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
 		Balance:   math.NewInt(4986480452),
 		Interest:  math.NewInt(708258),
 		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
-	k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 139)
+	require.NoError(t, err)
 
 	// ACT: Attempt to withdraw to admin with insufficient funds.
 	_, err = server.WithdrawToAdmin(ctx, &types.MsgWithdrawToAdmin{
@@ -685,7 +735,8 @@ func TestBurn(t *testing.T) {
 	require.ErrorContains(t, err, "cannot execute /halo.v1.MsgBurn")
 
 	// ARRANGE: Assign the international feeder role to user.
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to burn with insufficient funds.
 	_, err = server.Burn(ctx, &types.MsgBurn{
@@ -727,11 +778,13 @@ func TestBurnFor(t *testing.T) {
 
 	// ARRANGE: Generate admin and user accounts.
 	admin, user := utils.TestAccount(), utils.TestAccount()
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err := k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	require.NoError(t, err)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to burn for with an invalid signer address.
-	_, err := server.BurnFor(ctx, &types.MsgBurnFor{
+	_, err = server.BurnFor(ctx, &types.MsgBurnFor{
 		Signer: admin.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
@@ -795,11 +848,13 @@ func TestMint(t *testing.T) {
 
 	// ARRANGE: Generate admin and user accounts.
 	admin, user := utils.TestAccount(), utils.TestAccount()
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err := k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	require.NoError(t, err)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to mint with an invalid signer address.
-	_, err := server.Mint(ctx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Invalid,
 	})
 	// ASSERT: The action should've failed due to invalid signer address.
@@ -859,10 +914,12 @@ func TestMintWithRestrictions(t *testing.T) {
 
 	// ARRANGE: Generate admin and user accounts.
 	admin, user := utils.TestAccount(), utils.TestAccount()
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
-	k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	err := k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	require.NoError(t, err)
+	err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, true)
+	require.NoError(t, err)
 	// ACT: Attempt to mint with send restrictions.
-	_, err := server.Mint(ctx, &types.MsgMint{
+	_, err = server.Mint(ctx, &types.MsgMint{
 		Signer: admin.Address,
 		To:     user.Address,
 		Amount: math.NewInt(1_000_000),
@@ -897,7 +954,8 @@ func TestTradeToFiat(t *testing.T) {
 	require.ErrorContains(t, err, types.ErrInvalidFundAdmin.Error())
 
 	// ARRANGE: Set fund admin in state.
-	k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	err = k.SetUserRole(ctx, admin.Bytes, entitlements.ROLE_FUND_ADMIN, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to trade to fiat with an invalid recipient address.
 	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
@@ -916,7 +974,8 @@ func TestTradeToFiat(t *testing.T) {
 	require.ErrorContains(t, err, types.ErrInvalidLiquidityProvider.Error())
 
 	// ARRANGE: Set liquidity provider in state.
-	k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_LIQUIDITY_PROVIDER, true)
+	err = k.SetUserRole(ctx, recipient.Bytes, entitlements.ROLE_LIQUIDITY_PROVIDER, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to trade to fiat with insufficient funds.
 	_, err = server.TradeToFiat(ctx, &types.MsgTradeToFiat{
@@ -962,7 +1021,8 @@ func TestTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Set owner in state.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to transfer ownership with invalid signer.
 	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{
@@ -981,6 +1041,22 @@ func TestTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Generate a new owner account.
 	newOwner := utils.TestAccount()
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.Owner
+	k.Owner = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		types.OwnerKey, "owner", collections.StringValue,
+	)
+
+	// ACT: Attempt to transfer ownership with failing Owner collection store.
+	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{
+		Signer:   owner.Address,
+		NewOwner: newOwner.Address,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.Owner = tmp
 
 	// ACT: Attempt to transfer ownership.
 	_, err = server.TransferOwnership(ctx, &types.MsgTransferOwnership{

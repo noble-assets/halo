@@ -14,8 +14,8 @@ func (k *Keeper) GetAggregatorOwner(ctx context.Context) string {
 	return owner
 }
 
-func (k *Keeper) SetAggregatorOwner(ctx context.Context, owner string) {
-	_ = k.AggregatorOwner.Set(ctx, owner)
+func (k *Keeper) SetAggregatorOwner(ctx context.Context, owner string) error {
+	return k.AggregatorOwner.Set(ctx, owner)
 }
 
 //
@@ -25,13 +25,12 @@ func (k *Keeper) GetLastRoundId(ctx context.Context) uint64 {
 	return id
 }
 
-func (k *Keeper) IncrementLastRoundId(ctx context.Context) uint64 {
-	id, _ := k.LastRoundId.Next(ctx)
-	return id
+func (k *Keeper) IncrementLastRoundId(ctx context.Context) (uint64, error) {
+	return k.LastRoundId.Next(ctx)
 }
 
-func (k *Keeper) SetLastRoundId(ctx context.Context, id uint64) {
-	_ = k.LastRoundId.Set(ctx, id)
+func (k *Keeper) SetLastRoundId(ctx context.Context, id uint64) error {
+	return k.LastRoundId.Set(ctx, id)
 }
 
 //
@@ -41,8 +40,8 @@ func (k *Keeper) GetNextPrice(ctx context.Context) math.Int {
 	return price
 }
 
-func (k *Keeper) SetNextPrice(ctx context.Context, price math.Int) {
-	_ = k.NextPrice.Set(ctx, price)
+func (k *Keeper) SetNextPrice(ctx context.Context, price math.Int) error {
+	return k.NextPrice.Set(ctx, price)
 }
 
 //
@@ -67,6 +66,6 @@ func (k *Keeper) GetRounds(ctx context.Context) map[uint64]aggregator.RoundData 
 	return rounds
 }
 
-func (k *Keeper) SetRound(ctx context.Context, id uint64, round aggregator.RoundData) {
-	_ = k.Rounds.Set(ctx, id, round)
+func (k *Keeper) SetRound(ctx context.Context, id uint64, round aggregator.RoundData) error {
+	return k.Rounds.Set(ctx, id, round)
 }

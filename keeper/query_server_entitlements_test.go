@@ -23,7 +23,8 @@ func TestEntitlementsOwnerQuery(t *testing.T) {
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query entitlements owner.
 	res, err := server.Owner(ctx, &entitlements.QueryOwner{})
@@ -48,7 +49,8 @@ func TestPausedQuery(t *testing.T) {
 	require.False(t, res.Paused)
 
 	// ARRANGE: Set paused state to true.
-	k.SetPaused(ctx, true)
+	err = k.SetPaused(ctx, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query paused state with state.
 	res, err = server.Paused(ctx, &entitlements.QueryPaused{})
@@ -83,7 +85,8 @@ func TestPublicCapabilityQuery(t *testing.T) {
 
 	// ARRANGE: Set public capability in state.
 	// NOTE: Transferring will never be public, this is just for testing.
-	k.SetPublicCapability(ctx, "transfer", true)
+	err = k.SetPublicCapability(ctx, "transfer", true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query public capability that is enabled.
 	res, err = server.PublicCapability(ctx, &entitlements.QueryPublicCapability{
@@ -168,7 +171,8 @@ func TestUserCapabilityQuery(t *testing.T) {
 	require.Equal(t, 0, len(res.Roles))
 
 	userAddress, _ := sdk.AccAddressFromBech32(user.Address)
-	k.SetUserRole(ctx, userAddress, 2, true)
+	err = k.SetUserRole(ctx, userAddress, 2, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query role capability with an existing user and capability.
 	res, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
@@ -181,7 +185,8 @@ func TestUserCapabilityQuery(t *testing.T) {
 		{User: user.Address, Role: 2, Enabled: true},
 	}, k.GetAllUserRoles(ctx))
 
-	k.SetUserRole(ctx, userAddress, 3, true)
+	err = k.SetUserRole(ctx, userAddress, 3, true)
+	require.NoError(t, err)
 	// ACT: Attempt to query role capability with an existing user and multiple capabilities.
 	res, err = server.UserCapability(ctx, &entitlements.QueryUserCapability{
 		Address: user.Address,

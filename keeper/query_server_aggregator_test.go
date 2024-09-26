@@ -23,7 +23,8 @@ func TestAggregatorOwnerQuery(t *testing.T) {
 
 	// ARRANGE: Set aggregator owner in state.
 	owner := utils.TestAccount()
-	k.SetAggregatorOwner(ctx, owner.Address)
+	err = k.SetAggregatorOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query aggregator owner.
 	res, err := server.Owner(ctx, &aggregator.QueryOwner{})
@@ -50,7 +51,8 @@ func TestNextPriceQuery(t *testing.T) {
 	// ARRANGE: Set next price in state.
 	// https://etherscan.io/tx/0xfd21979418ce5e6686c624841f48d11ed241b387b08eb60e2bd361de5ed1a061
 	expected := math.NewInt(103780600)
-	k.SetNextPrice(ctx, expected)
+	err = k.SetNextPrice(ctx, expected)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query next price with state.
 	res, err = server.NextPrice(ctx, &aggregator.QueryNextPrice{})
@@ -70,13 +72,14 @@ func TestRoundDataQuery(t *testing.T) {
 
 	// ARRANGE: Set a round in state.
 	// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428
-	k.SetRound(ctx, 187, aggregator.RoundData{
+	err = k.SetRound(ctx, 187, aggregator.RoundData{
 		Answer:    math.NewInt(103780685),
 		Balance:   math.NewInt(4791541000),
 		Interest:  math.NewInt(701123),
 		Supply:    math.NewInt(46169872257060),
 		UpdatedAt: 1712071487,
 	})
+	require.NoError(t, err)
 
 	// ACT: Attempt to query round data of unknown round.
 	_, err = server.RoundData(ctx, &aggregator.QueryRoundData{RoundId: 0})
@@ -105,14 +108,16 @@ func TestLatestRoundDataQuery(t *testing.T) {
 
 	// ARRANGE: Set a round in state.
 	// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428
-	k.SetRound(ctx, 187, aggregator.RoundData{
+	err = k.SetRound(ctx, 187, aggregator.RoundData{
 		Answer:    math.NewInt(103780685),
 		Balance:   math.NewInt(4791541000),
 		Interest:  math.NewInt(701123),
 		Supply:    math.NewInt(46169872257060),
 		UpdatedAt: 1712071487,
 	})
-	k.SetLastRoundId(ctx, 187)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 187)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query latest round details.
 	res, err := server.LatestRoundData(ctx, &aggregator.QueryLatestRoundData{})
@@ -136,13 +141,14 @@ func TestRoundDetailsQuery(t *testing.T) {
 
 	// ARRANGE: Set a round in state.
 	// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428
-	k.SetRound(ctx, 187, aggregator.RoundData{
+	err = k.SetRound(ctx, 187, aggregator.RoundData{
 		Answer:    math.NewInt(103780685),
 		Balance:   math.NewInt(4791541000),
 		Interest:  math.NewInt(701123),
 		Supply:    math.NewInt(46169872257060),
 		UpdatedAt: 1712071487,
 	})
+	require.NoError(t, err)
 
 	// ACT: Attempt to query round details of unknown round.
 	_, err = server.RoundDetails(ctx, &aggregator.QueryRoundDetails{RoundId: 0})
@@ -171,14 +177,16 @@ func TestLatestRoundDetailsQuery(t *testing.T) {
 
 	// ARRANGE: Set a round in state.
 	// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428
-	k.SetRound(ctx, 187, aggregator.RoundData{
+	err = k.SetRound(ctx, 187, aggregator.RoundData{
 		Answer:    math.NewInt(103780685),
 		Balance:   math.NewInt(4791541000),
 		Interest:  math.NewInt(701123),
 		Supply:    math.NewInt(46169872257060),
 		UpdatedAt: 1712071487,
 	})
-	k.SetLastRoundId(ctx, 187)
+	require.NoError(t, err)
+	err = k.SetLastRoundId(ctx, 187)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query latest round details.
 	res, err := server.LatestRoundDetails(ctx, &aggregator.QueryLatestRoundDetails{})

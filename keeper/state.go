@@ -9,8 +9,8 @@ func (k *Keeper) GetOwner(ctx context.Context) string {
 	return owner
 }
 
-func (k *Keeper) SetOwner(ctx context.Context, owner string) {
-	_ = k.Owner.Set(ctx, owner)
+func (k *Keeper) SetOwner(ctx context.Context, owner string) error {
+	return k.Owner.Set(ctx, owner)
 }
 
 //
@@ -33,12 +33,14 @@ func (k *Keeper) GetNonces(ctx context.Context) map[string]uint64 {
 	return nonces
 }
 
-func (k *Keeper) IncrementNonce(ctx context.Context, address []byte) uint64 {
+func (k *Keeper) IncrementNonce(ctx context.Context, address []byte) (uint64, error) {
 	nonce := k.GetNonce(ctx, address)
-	k.SetNonce(ctx, address, nonce+1)
-	return nonce
+	if err := k.SetNonce(ctx, address, nonce+1); err != nil {
+		return 0, err
+	}
+	return nonce, nil
 }
 
-func (k *Keeper) SetNonce(ctx context.Context, address []byte, nonce uint64) {
-	_ = k.Nonces.Set(ctx, address, nonce)
+func (k *Keeper) SetNonce(ctx context.Context, address []byte, nonce uint64) error {
+	return k.Nonces.Set(ctx, address, nonce)
 }

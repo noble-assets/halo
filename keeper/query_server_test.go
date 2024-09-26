@@ -22,7 +22,8 @@ func TestOwnerQuery(t *testing.T) {
 
 	// ARRANGE: Set owner in state.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query owner.
 	res, err := server.Owner(ctx, &types.QueryOwner{})
@@ -50,8 +51,10 @@ func TestNoncesQuery(t *testing.T) {
 
 	// ARRANGE: Set nonces in state.
 	user1, user2 := utils.TestAccount(), utils.TestAccount()
-	k.SetNonce(ctx, user1.Bytes, 1)
-	k.SetNonce(ctx, user2.Bytes, 2)
+	err = k.SetNonce(ctx, user1.Bytes, 1)
+	require.NoError(t, err)
+	err = k.SetNonce(ctx, user2.Bytes, 2)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query nonces with state.
 	res, err = server.Nonces(ctx, &types.QueryNonces{})
@@ -88,7 +91,8 @@ func TestNonceQuery(t *testing.T) {
 
 	// ARRANGE: Set nonce in state.
 	user := utils.TestAccount()
-	k.SetNonce(ctx, user.Bytes, 1)
+	err = k.SetNonce(ctx, user.Bytes, 1)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query nonce of used account.
 	res, err = server.Nonce(ctx, &types.QueryNonce{

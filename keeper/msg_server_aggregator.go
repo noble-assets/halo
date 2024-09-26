@@ -27,7 +27,10 @@ func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregato
 
 	balance := msg.Principal.Add(msg.Interest)
 
-	id := k.IncrementLastRoundId(ctx)
+	id, err := k.IncrementLastRoundId(ctx)
+	if err != nil {
+		return nil, err
+	}
 	round, found := k.GetRound(ctx, id)
 	if found && round.Balance.Equal(balance) && round.Interest.Equal(msg.Interest) && round.Supply.Equal(msg.TotalSupply) {
 		return nil, aggregator.ErrAlreadyReported
@@ -46,12 +49,16 @@ func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregato
 		Supply:    msg.TotalSupply,
 		UpdatedAt: ctx.BlockTime().Unix(),
 	}
-	k.SetRound(ctx, id, round)
+	if err = k.SetRound(ctx, id, round); err != nil {
+		return nil, err
+	}
 
 	if !msg.NextPrice.IsPositive() || msg.NextPrice.LTE(answer) {
 		return nil, aggregator.ErrInvalidNextPrice
 	}
-	k.Keeper.SetNextPrice(ctx, msg.NextPrice)
+	if err = k.Keeper.SetNextPrice(ctx, msg.NextPrice); err != nil {
+		return nil, err
+	}
 
 	return &aggregator.MsgReportBalanceResponse{
 			RoundId: id,
@@ -78,7 +85,9 @@ func (k aggregatorMsgServer) SetNextPrice(goCtx context.Context, msg *aggregator
 		return nil, aggregator.ErrInvalidNextPrice
 	}
 
-	k.Keeper.SetNextPrice(ctx, msg.NextPrice)
+	if err = k.Keeper.SetNextPrice(ctx, msg.NextPrice); err != nil {
+		return nil, err
+	}
 
 	return &aggregator.MsgSetNextPriceResponse{}, ctx.EventManager().EmitTypedEvent(&aggregator.NextPriceReported{
 		Price: msg.NextPrice,
@@ -96,7 +105,9 @@ func (k aggregatorMsgServer) TransferOwnership(goCtx context.Context, msg *aggre
 		return nil, aggregator.ErrSameOwner
 	}
 
-	k.SetAggregatorOwner(ctx, msg.NewOwner)
+	if err = k.SetAggregatorOwner(ctx, msg.NewOwner); err != nil {
+		return nil, err
+	}
 
 	return &aggregator.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&aggregator.OwnershipTransferred{
 		PreviousOwner: owner,

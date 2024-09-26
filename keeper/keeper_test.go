@@ -51,12 +51,14 @@ func TestSendRestrictionBurn(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			keeper.SetPaused(ctx, testCase.paused)
+			err := keeper.SetPaused(ctx, testCase.paused)
+			require.NoError(t, err)
 			// ARRANGE: Set allowed state.
-			keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			err = keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			require.NoError(t, err)
 
 			// ACT: Attempt to burn.
-			_, err := keeper.SendRestrictionFn(ctx, user.Bytes, types.ModuleAddress, coins)
+			_, err = keeper.SendRestrictionFn(ctx, user.Bytes, types.ModuleAddress, coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {
@@ -107,12 +109,14 @@ func TestSendRestrictionMint(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			keeper.SetPaused(ctx, testCase.paused)
+			err := keeper.SetPaused(ctx, testCase.paused)
+			require.NoError(t, err)
 			// ARRANGE: Set allowed state.
-			keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			err = keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			require.NoError(t, err)
 
 			// ACT: Attempt to mint.
-			_, err := keeper.SendRestrictionFn(ctx, types.ModuleAddress, user.Bytes, coins)
+			_, err = keeper.SendRestrictionFn(ctx, types.ModuleAddress, user.Bytes, coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {
@@ -214,14 +218,17 @@ func TestSendRestrictionTransfer(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			keeper.SetPaused(ctx, testCase.paused)
+			err := keeper.SetPaused(ctx, testCase.paused)
+			require.NoError(t, err)
 			// ARRANGE: Set sender allowed state.
-			keeper.SetUserRole(ctx, alice.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.senderAllowed)
+			err = keeper.SetUserRole(ctx, alice.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.senderAllowed)
+			require.NoError(t, err)
 			// ARRANGE: Set recipient allowed state.
-			keeper.SetUserRole(ctx, bob.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.recipientAllowed)
+			err = keeper.SetUserRole(ctx, bob.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.recipientAllowed)
+			require.NoError(t, err)
 
 			// ACT: Attempt to transfer.
-			_, err := keeper.SendRestrictionFn(ctx, alice.Bytes, bob.Bytes, testCase.coins)
+			_, err = keeper.SendRestrictionFn(ctx, alice.Bytes, bob.Bytes, testCase.coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {

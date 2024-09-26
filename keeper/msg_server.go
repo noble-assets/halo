@@ -260,7 +260,9 @@ func (k msgServer) TransferOwnership(goCtx context.Context, msg *types.MsgTransf
 		return nil, types.ErrSameOwner
 	}
 
-	k.SetOwner(ctx, msg.NewOwner)
+	if err := k.SetOwner(ctx, msg.NewOwner); err != nil {
+		return nil, err
+	}
 
 	return &types.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&types.OwnershipTransferred{
 		PreviousOwner: owner,

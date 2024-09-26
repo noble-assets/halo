@@ -32,8 +32,8 @@ func (k *Keeper) GetEntitlementsOwner(ctx context.Context) string {
 	return owner
 }
 
-func (k *Keeper) SetEntitlementsOwner(ctx context.Context, owner string) {
-	_ = k.EntitlementsOwner.Set(ctx, owner)
+func (k *Keeper) SetEntitlementsOwner(ctx context.Context, owner string) error {
+	return k.EntitlementsOwner.Set(ctx, owner)
 }
 
 //
@@ -43,8 +43,8 @@ func (k *Keeper) GetPaused(ctx context.Context) bool {
 	return paused
 }
 
-func (k *Keeper) SetPaused(ctx context.Context, paused bool) {
-	_ = k.Paused.Set(ctx, paused)
+func (k *Keeper) SetPaused(ctx context.Context, paused bool) error {
+	return k.Paused.Set(ctx, paused)
 }
 
 //
@@ -65,8 +65,8 @@ func (k *Keeper) GetPublicCapabilities(ctx context.Context) map[string]bool {
 	return publicCapabilities
 }
 
-func (k *Keeper) SetPublicCapability(ctx context.Context, method string, enabled bool) {
-	_ = k.PublicCapabilities.Set(ctx, method, enabled)
+func (k *Keeper) SetPublicCapability(ctx context.Context, method string, enabled bool) error {
+	return k.PublicCapabilities.Set(ctx, method, enabled)
 }
 
 //
@@ -101,8 +101,8 @@ func (k *Keeper) GetAllCapabilityRoles(ctx context.Context) []entitlements.RoleC
 	return capabilityRoles
 }
 
-func (k *Keeper) SetRoleCapability(ctx context.Context, method string, role entitlements.Role, enabled bool) {
-	_ = k.RoleCapabilities.Set(ctx, collections.Join(method, uint64(role)), enabled)
+func (k *Keeper) SetRoleCapability(ctx context.Context, method string, role entitlements.Role, enabled bool) error {
+	return k.RoleCapabilities.Set(ctx, collections.Join(method, uint64(role)), enabled)
 }
 
 //
@@ -143,6 +143,6 @@ func (k *Keeper) HasRole(ctx context.Context, address []byte, role entitlements.
 	return enabled
 }
 
-func (k *Keeper) SetUserRole(ctx context.Context, address []byte, role entitlements.Role, enabled bool) {
-	_ = k.UserRoles.Set(ctx, collections.Join(address, uint64(role)), enabled)
+func (k *Keeper) SetUserRole(ctx context.Context, address []byte, role entitlements.Role, enabled bool) error {
+	return k.UserRoles.Set(ctx, collections.Join(address, uint64(role)), enabled)
 }

@@ -124,11 +124,16 @@ func (k *Keeper) VerifyWithdrawSignature(ctx sdk.Context, recipient sdk.AccAddre
 		return false
 	}
 
+	nonce, err := k.IncrementNonce(ctx, recipient)
+	if err != nil {
+		return false
+	}
+
 	bz, err := json.Marshal(types.WithdrawSignatureWrapper{
 		Data: types.WithdrawSignatureData{
 			Recipient: recipient,
 			Amount:    amount,
-			Nonce:     k.IncrementNonce(ctx, recipient),
+			Nonce:     nonce,
 		},
 	})
 	if err != nil {

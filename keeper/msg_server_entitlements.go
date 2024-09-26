@@ -31,7 +31,9 @@ func (k entitlementsMsgServer) SetPublicCapability(goCtx context.Context, msg *e
 		return nil, errors.Wrapf(entitlements.ErrInvalidMethod, "method %s does not exist or is not allowed", msg.Method)
 	}
 
-	k.Keeper.SetPublicCapability(ctx, msg.Method, msg.Enabled)
+	if err = k.Keeper.SetPublicCapability(ctx, msg.Method, msg.Enabled); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgSetPublicCapabilityResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.PublicCapabilityUpdated{
 		Method:  msg.Method,
@@ -56,7 +58,9 @@ func (k entitlementsMsgServer) SetRoleCapability(goCtx context.Context, msg *ent
 		return nil, errors.Wrapf(entitlements.ErrInvalidMethod, "method %s does not exist or is not allowed", msg.Method)
 	}
 
-	k.Keeper.SetRoleCapability(ctx, msg.Method, msg.Role, msg.Enabled)
+	if err = k.Keeper.SetRoleCapability(ctx, msg.Method, msg.Role, msg.Enabled); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgSetRoleCapabilityResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.RoleCapabilityUpdated{
 		Role:    msg.Role,
@@ -82,7 +86,9 @@ func (k entitlementsMsgServer) SetUserRole(goCtx context.Context, msg *entitleme
 		return nil, errors.Wrapf(entitlements.ErrInvalidRole, "role %s does not exist", msg.Role)
 	}
 
-	k.Keeper.SetUserRole(ctx, user, msg.Role, msg.Enabled)
+	if err = k.Keeper.SetUserRole(ctx, user, msg.Role, msg.Enabled); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgSetUserRoleResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.UserRoleUpdated{
 		User:    msg.User,
@@ -98,7 +104,9 @@ func (k entitlementsMsgServer) Pause(goCtx context.Context, msg *entitlements.Ms
 		return nil, err
 	}
 
-	k.SetPaused(ctx, true)
+	if err = k.SetPaused(ctx, true); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgPauseResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.Paused{
 		Account: msg.Signer,
@@ -112,7 +120,9 @@ func (k entitlementsMsgServer) Unpause(goCtx context.Context, msg *entitlements.
 		return nil, err
 	}
 
-	k.SetPaused(ctx, false)
+	if err = k.SetPaused(ctx, false); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgUnpauseResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.Unpaused{
 		Account: msg.Signer,
@@ -130,7 +140,9 @@ func (k entitlementsMsgServer) TransferOwnership(goCtx context.Context, msg *ent
 		return nil, entitlements.ErrSameOwner
 	}
 
-	k.SetEntitlementsOwner(ctx, msg.NewOwner)
+	if err = k.SetEntitlementsOwner(ctx, msg.NewOwner); err != nil {
+		return nil, err
+	}
 
 	return &entitlements.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.OwnershipTransferred{
 		PreviousOwner: owner,

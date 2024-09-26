@@ -3,8 +3,10 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/keeper"
+	"github.com/noble-assets/halo/v2/types"
 	"github.com/noble-assets/halo/v2/types/entitlements"
 	"github.com/noble-assets/halo/v2/utils"
 	"github.com/noble-assets/halo/v2/utils/mocks"
@@ -22,7 +24,8 @@ func TestPause(t *testing.T) {
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to pause with invalid signer.
 	_, err = server.Pause(ctx, &entitlements.MsgPause{
@@ -30,6 +33,21 @@ func TestPause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, entitlements.ErrInvalidOwner.Error())
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.Paused
+	k.Paused = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.PausedKey, "entitlements_paused", collections.BoolValue,
+	)
+
+	// ACT: Attempt to pause with failing Paused collection store.
+	_, err = server.Pause(ctx, &entitlements.MsgPause{
+		Signer: owner.Address,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.Paused = tmp
 
 	// ACT: Attempt to pause.
 	_, err = server.Pause(ctx, &entitlements.MsgPause{
@@ -45,16 +63,18 @@ func TestUnpause(t *testing.T) {
 	server := keeper.NewEntitlementsMsgServer(k)
 
 	// ARRANGE: Set paused state to true.
-	k.SetPaused(ctx, true)
+	err := k.SetPaused(ctx, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to unpause with no owner set.
-	_, err := server.Unpause(ctx, &entitlements.MsgUnpause{})
+	_, err = server.Unpause(ctx, &entitlements.MsgUnpause{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to unpause with invalid signer.
 	_, err = server.Unpause(ctx, &entitlements.MsgUnpause{
@@ -62,6 +82,21 @@ func TestUnpause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, entitlements.ErrInvalidOwner.Error())
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.Paused
+	k.Paused = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.PausedKey, "entitlements_paused", collections.BoolValue,
+	)
+
+	// ACT: Attempt to unpause with failing Paused collection store.
+	_, err = server.Unpause(ctx, &entitlements.MsgUnpause{
+		Signer: owner.Address,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.Paused = tmp
 
 	// ACT: Attempt to unpause.
 	_, err = server.Unpause(ctx, &entitlements.MsgUnpause{
@@ -83,7 +118,8 @@ func TestEntitlementsTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to transfer ownership with invalid signer.
 	_, err = server.TransferOwnership(ctx, &entitlements.MsgTransferOwnership{
@@ -102,6 +138,22 @@ func TestEntitlementsTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Generate a new owner account.
 	newOwner := utils.TestAccount()
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.EntitlementsOwner
+	k.EntitlementsOwner = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.OwnerKey, "entitlements_owner", collections.StringValue,
+	)
+
+	// ACT: Attempt to transfer ownership with failing EntitlementsOwner collection store.
+	_, err = server.TransferOwnership(ctx, &entitlements.MsgTransferOwnership{
+		Signer:   owner.Address,
+		NewOwner: newOwner.Address,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.EntitlementsOwner = tmp
 
 	// ACT: Attempt to transfer ownership.
 	_, err = server.TransferOwnership(ctx, &entitlements.MsgTransferOwnership{
@@ -127,7 +179,8 @@ func TestEntitlementsPublicCapabilities(t *testing.T) {
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt set public capability with invalid signer.
 	_, err = server.SetPublicCapability(ctx, &entitlements.MsgSetPublicCapability{
@@ -165,6 +218,23 @@ func TestEntitlementsPublicCapabilities(t *testing.T) {
 	require.Equal(t, true, k.IsPublicCapability(ctx, "/halo.entitlements.v1.MsgSetRoleCapability"))
 	require.Equal(t, 1, len(k.GetPublicCapabilities(ctx)))
 
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.PublicCapabilities
+	k.PublicCapabilities = collections.NewMap(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.PublicPrefix, "entitlements_public_capabilities", collections.StringKey, collections.BoolValue,
+	)
+
+	// ACT: Attempt set public capability with failing PublicCapabilities collection store.
+	_, err = server.SetPublicCapability(ctx, &entitlements.MsgSetPublicCapability{
+		Signer:  owner.Address,
+		Method:  "transfer",
+		Enabled: true,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.PublicCapabilities = tmp
+
 	// ACT: Attempt set public capability a valid capability.
 	_, err = server.SetPublicCapability(ctx, &entitlements.MsgSetPublicCapability{
 		Signer:  owner.Address,
@@ -199,7 +269,8 @@ func TestEntitlementsUserRoles(t *testing.T) {
 	// ARRANGE: Set entitlements owner in state.
 	owner, bob, alice := utils.TestAccount(), utils.TestAccount(), utils.TestAccount()
 	userAddress, _ := sdk.AccAddressFromBech32(bob.Address)
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt set user role with invalid signer.
 	_, err = server.SetUserRole(ctx, &entitlements.MsgSetUserRole{
@@ -237,6 +308,24 @@ func TestEntitlementsUserRoles(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to a non-existing role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidRole.Error())
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.UserRoles
+	k.UserRoles = collections.NewMap(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.UserPrefix, "entitlements_user_roles", collections.PairKeyCodec(collections.BytesKey, collections.Uint64Key), collections.BoolValue,
+	)
+
+	// ACT: Attempt set user role with failing UserRoles collection store.
+	_, err = server.SetUserRole(ctx, &entitlements.MsgSetUserRole{
+		Signer:  owner.Address,
+		User:    bob.Address,
+		Role:    entitlements.ROLE_INTERNATIONAL_FEEDER,
+		Enabled: true,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.UserRoles = tmp
 
 	// ACT: Attempt set user role with valid message.
 	_, err = server.SetUserRole(ctx, &entitlements.MsgSetUserRole{
@@ -304,7 +393,8 @@ func TestEntitlementsUserCapability(t *testing.T) {
 
 	// ARRANGE: Set entitlements owner in state.
 	owner := utils.TestAccount()
-	k.SetEntitlementsOwner(ctx, owner.Address)
+	err = k.SetEntitlementsOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt set role capability with invalid signer.
 	_, err = server.SetUserRole(ctx, &entitlements.MsgSetUserRole{
@@ -313,7 +403,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, entitlements.ErrInvalidOwner.Error())
 
-	// ACT: Attempt set user role with a negative invalid role.
+	// ACT: Attempt set role capability with a negative invalid role.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Role:    -1000,
@@ -323,7 +413,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to an invalid negative role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidRole.Error())
 
-	// ACT: Attempt set user role with a non-existing role.
+	// ACT: Attempt set role capability with a non-existing role.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "transfer",
@@ -333,7 +423,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to a non-existing role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidRole.Error())
 
-	// ACT: Attempt set user role with a non-existing role.
+	// ACT: Attempt set role capability with a non-existing role.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "transfer",
@@ -344,7 +434,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	require.ErrorContains(t, err, entitlements.ErrInvalidRole.Error())
 
 	require.Equal(t, 4, len(k.GetCapabilityRoles(ctx, "transfer")))
-	// ACT: Attempt set user role with a non-existing method.
+	// ACT: Attempt set role capability with a non-existing method.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "transfer2",
@@ -354,7 +444,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to a non-existing role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
 
-	// ACT: Attempt set user role with a non-allowed method.
+	// ACT: Attempt set role capability with a non-allowed method.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "/cosmos.bank.v1beta1.MsgSend",
@@ -364,7 +454,25 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	// ASSERT: The action should've failed due to a non-allowed role.
 	require.ErrorContains(t, err, entitlements.ErrInvalidMethod.Error())
 
-	// ACT: Attempt set user role with valid message.
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmpRole := k.RoleCapabilities
+	k.RoleCapabilities = collections.NewMap(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		entitlements.CapabilityPrefix, "entitlements_role_capabilities", collections.PairKeyCodec(collections.StringKey, collections.Uint64Key), collections.BoolValue,
+	)
+
+	// ACT: Attempt set role capability with failing RoleCapabilities collection store.
+	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
+		Signer:  owner.Address,
+		Method:  "transfer",
+		Role:    5,
+		Enabled: true,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.RoleCapabilities = tmpRole
+
+	// ACT: Attempt set role capability with valid message.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "transfer",
@@ -375,7 +483,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 5, len(k.GetCapabilityRoles(ctx, "transfer")))
 
-	// ACT: Attempt remove user role.
+	// ACT: Attempt remove role capability.
 	_, err = server.SetRoleCapability(ctx, &entitlements.MsgSetRoleCapability{
 		Signer:  owner.Address,
 		Method:  "transfer",

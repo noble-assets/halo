@@ -3,8 +3,12 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/keeper"
+	"github.com/noble-assets/halo/v2/types"
 	"github.com/noble-assets/halo/v2/types/aggregator"
 	"github.com/noble-assets/halo/v2/utils"
 	"github.com/noble-assets/halo/v2/utils/data"
@@ -23,7 +27,8 @@ func TestReportBalance(t *testing.T) {
 
 	// ARRANGE: Set aggregator owner in state.
 	owner := utils.TestAccount()
-	k.SetAggregatorOwner(ctx, owner.Address)
+	err = k.SetAggregatorOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ARRANGE: Save the original LastRoundIDKey and reset it to an empty byte slice.
 	tmpLastRoundIDKey := aggregator.LastRoundIDKey
@@ -91,7 +96,8 @@ func TestReportBalance(t *testing.T) {
 	require.ErrorContains(t, err, aggregator.ErrInvalidNextPrice.Error())
 
 	// ARRANGE: Set the next round in state.
-	k.SetRound(ctx, k.GetLastRoundId(ctx)+1, aggregator.RoundData{})
+	err = k.SetRound(ctx, k.GetLastRoundId(ctx)+1, aggregator.RoundData{})
+	require.NoError(t, err)
 
 	// ACT: Attempt to report balance with existing next round.
 	// https://etherscan.io/tx/0x1a628856cb74de37357a35c29ec22509b72b1fc826ac7bb1020c73a99f9f80fc
@@ -105,6 +111,45 @@ func TestReportBalance(t *testing.T) {
 	_, err = server.ReportBalance(ctx, &msg)
 	// ASSERT: The action should've failed due to existing round.
 	require.ErrorContains(t, err, aggregator.ErrAlreadyReported.Error())
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmpRounds := k.Rounds
+	k.Rounds = collections.NewMap(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		aggregator.RoundPrefix, "aggregator_rounds", collections.Uint64Key, codec.CollValue[aggregator.RoundData](
+			mocks.MakeTestEncodingConfig("noble").Codec,
+		),
+	)
+
+	// ACT: Attempt to report balance with failing Rounds store.
+	_, err = server.ReportBalance(ctx, &msg)
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.Rounds = tmpRounds
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmpLastRoundId := k.LastRoundId
+	k.LastRoundId = collections.NewSequence(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		aggregator.LastRoundIDKey, "aggregator_last_round_id",
+	)
+
+	// ACT: Attempt to report balance with failing LastRoundId store.
+	_, err = server.ReportBalance(ctx, &msg)
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.LastRoundId = tmpLastRoundId
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	k.NextPrice = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		aggregator.NextPriceKey, "aggregator_next_price", sdk.IntValue,
+	)
+
+	// ACT: Attempt to report balance with failing NextPrice store.
+	_, err = server.ReportBalance(ctx, &msg)
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
 }
 
 func TestSetNextPrice(t *testing.T) {
@@ -118,7 +163,8 @@ func TestSetNextPrice(t *testing.T) {
 
 	// ARRANGE: Set aggregator owner in state.
 	owner := utils.TestAccount()
-	k.SetAggregatorOwner(ctx, owner.Address)
+	err = k.SetAggregatorOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to set next price with invalid signer.
 	_, err = server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{
@@ -145,6 +191,20 @@ func TestSetNextPrice(t *testing.T) {
 	// ASSERT: The action should've succeeded, and set next price in state.
 	require.NoError(t, err)
 	require.Equal(t, price, k.GetNextPrice(ctx))
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	k.NextPrice = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		aggregator.NextPriceKey, "aggregator_next_price", sdk.IntValue,
+	)
+
+	// ACT: Attempt to set next price.
+	_, err = server.SetNextPrice(ctx, &aggregator.MsgSetNextPrice{
+		Signer:    owner.Address,
+		NextPrice: price,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
 }
 
 func TestAggregatorTransferOwnership(t *testing.T) {
@@ -158,7 +218,8 @@ func TestAggregatorTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Set aggregator owner in state.
 	owner := utils.TestAccount()
-	k.SetAggregatorOwner(ctx, owner.Address)
+	err = k.SetAggregatorOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to transfer ownership with invalid signer.
 	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{
@@ -177,6 +238,22 @@ func TestAggregatorTransferOwnership(t *testing.T) {
 
 	// ARRANGE: Generate a new owner account.
 	newOwner := utils.TestAccount()
+
+	// ARRANGE: Set up a failing collection store for the attribute setter.
+	tmp := k.AggregatorOwner
+	k.AggregatorOwner = collections.NewItem(
+		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
+		aggregator.OwnerKey, "aggregator_owner", collections.StringValue,
+	)
+
+	// ACT: Attempt to transfer ownership.
+	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{
+		Signer:   owner.Address,
+		NewOwner: newOwner.Address,
+	})
+	// ASSERT: The action should've failed due to collection store setter error.
+	require.Error(t, err, mocks.ErrorStoreAccess)
+	k.AggregatorOwner = tmp
 
 	// ACT: Attempt to transfer ownership.
 	_, err = server.TransferOwnership(ctx, &aggregator.MsgTransferOwnership{

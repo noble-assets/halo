@@ -9,29 +9,49 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) {
-	k.SetAggregatorOwner(ctx, genesis.AggregatorState.Owner)
-	k.SetLastRoundId(ctx, genesis.AggregatorState.LastRoundId)
-	k.SetNextPrice(ctx, genesis.AggregatorState.NextPrice)
+	if err := k.SetAggregatorOwner(ctx, genesis.AggregatorState.Owner); err != nil {
+		panic(err)
+	}
+	if err := k.SetLastRoundId(ctx, genesis.AggregatorState.LastRoundId); err != nil {
+		panic(err)
+	}
+	if err := k.SetNextPrice(ctx, genesis.AggregatorState.NextPrice); err != nil {
+		panic(err)
+	}
 	for id, round := range genesis.AggregatorState.Rounds {
-		k.SetRound(ctx, id, round)
+		if err := k.SetRound(ctx, id, round); err != nil {
+			panic(err)
+		}
 	}
 
-	k.SetEntitlementsOwner(ctx, genesis.EntitlementsState.Owner)
+	if err := k.SetEntitlementsOwner(ctx, genesis.EntitlementsState.Owner); err != nil {
+		panic(err)
+	}
 	for method, enabled := range genesis.EntitlementsState.PublicCapabilities {
-		k.SetPublicCapability(ctx, method, enabled)
+		if err := k.SetPublicCapability(ctx, method, enabled); err != nil {
+			panic(err)
+		}
 	}
 	for _, entry := range genesis.EntitlementsState.RoleCapabilities {
-		k.SetRoleCapability(ctx, entry.Method, entry.Role, entry.Enabled)
+		if err := k.SetRoleCapability(ctx, entry.Method, entry.Role, entry.Enabled); err != nil {
+			panic(err)
+		}
 	}
 	for _, entry := range genesis.EntitlementsState.UserRoles {
 		user := sdk.MustAccAddressFromBech32(entry.User)
-		k.SetUserRole(ctx, user, entry.Role, entry.Enabled)
+		if err := k.SetUserRole(ctx, user, entry.Role, entry.Enabled); err != nil {
+			panic(err)
+		}
 	}
 
-	k.SetOwner(ctx, genesis.Owner)
+	if err := k.SetOwner(ctx, genesis.Owner); err != nil {
+		panic(err)
+	}
 	for account, nonce := range genesis.Nonces {
 		address := sdk.MustAccAddressFromBech32(account)
-		k.SetNonce(ctx, address, nonce)
+		if err := k.SetNonce(ctx, address, nonce); err != nil {
+			panic(err)
+		}
 	}
 }
 
