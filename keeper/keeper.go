@@ -7,6 +7,7 @@ import (
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/event"
+	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -22,9 +23,10 @@ type Keeper struct {
 	Denom      string
 	Underlying string
 
-	Schema       collections.Schema
-	storeService store.KVStoreService
-	eventService event.Service
+	Schema        collections.Schema
+	storeService  store.KVStoreService
+	eventService  event.Service
+	headerService header.Service
 
 	Owner  collections.Item[string]
 	Nonces collections.Map[[]byte, uint64]
@@ -49,6 +51,7 @@ func NewKeeper(
 	cdc codec.Codec,
 	storeService store.KVStoreService,
 	eventService event.Service,
+	headerService header.Service,
 	denom string,
 	underlying string,
 	accountKeeper types.AccountKeeper,
@@ -61,8 +64,9 @@ func NewKeeper(
 		Denom:      denom,
 		Underlying: underlying,
 
-		storeService: storeService,
-		eventService: eventService,
+		storeService:  storeService,
+		eventService:  eventService,
+		headerService: headerService,
 
 		Owner:  collections.NewItem(builder, types.OwnerKey, "owner", collections.StringValue),
 		Nonces: collections.NewMap(builder, types.NoncePrefix, "nonces", collections.BytesKey, collections.Uint64Value),

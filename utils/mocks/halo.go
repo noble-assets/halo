@@ -40,6 +40,7 @@ func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper)
 		cfg.Codec,
 		runtime.NewKVStoreService(key),
 		runtime.ProvideEventService(),
+		runtime.ProvideHeaderInfoService(&runtime.AppBuilder{}),
 		"uusyc",
 		"uusdc",
 		account,

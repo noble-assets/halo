@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/types/aggregator"
 )
 
@@ -19,7 +18,6 @@ func NewAggregatorMsgServer(keeper *Keeper) aggregator.MsgServer {
 }
 
 func (k aggregatorMsgServer) ReportBalance(ctx context.Context, msg *aggregator.MsgReportBalance) (*aggregator.MsgReportBalanceResponse, error) {
-	goCtx := sdk.UnwrapSDKContext(ctx)
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -47,7 +45,7 @@ func (k aggregatorMsgServer) ReportBalance(ctx context.Context, msg *aggregator.
 		Balance:   balance,
 		Interest:  msg.Interest,
 		Supply:    msg.TotalSupply,
-		UpdatedAt: goCtx.BlockTime().Unix(),
+		UpdatedAt: k.headerService.GetHeaderInfo(ctx).Time.Unix(),
 	}
 	if err = k.SetRound(ctx, id, round); err != nil {
 		return nil, err
@@ -60,18 +58,18 @@ func (k aggregatorMsgServer) ReportBalance(ctx context.Context, msg *aggregator.
 		return nil, err
 	}
 
+	_ = k.eventService.EventManager(ctx).Emit(ctx, &aggregator.BalanceReported{
+		RoundId:   id,
+		Balance:   balance,
+		Interest:  msg.Interest,
+		Price:     answer,
+		UpdatedAt: k.headerService.GetHeaderInfo(ctx).Time.Unix(),
+	})
+	_ = k.eventService.EventManager(ctx).Emit(ctx, &aggregator.NextPriceReported{Price: msg.NextPrice})
+
 	return &aggregator.MsgReportBalanceResponse{
-			RoundId: id,
-		}, goCtx.EventManager().EmitTypedEvents(
-			&aggregator.BalanceReported{
-				RoundId:   id,
-				Balance:   balance,
-				Interest:  msg.Interest,
-				Price:     answer,
-				UpdatedAt: goCtx.BlockTime().Unix(),
-			},
-			&aggregator.NextPriceReported{Price: msg.NextPrice},
-		)
+		RoundId: id,
+	}, nil
 }
 
 func (k aggregatorMsgServer) SetNextPrice(ctx context.Context, msg *aggregator.MsgSetNextPrice) (*aggregator.MsgSetNextPriceResponse, error) {

@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/event"
+	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -149,6 +151,8 @@ type ModuleInputs struct {
 	Config            *modulev1.Module
 	Cdc               codec.Codec
 	StoreService      store.KVStoreService
+	EventService      event.Service
+	HeaderService     header.Service
 	InterfaceRegistry codectypes.InterfaceRegistry
 
 	AccountKeeper types.AccountKeeper
@@ -167,6 +171,8 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.StoreService,
+		in.EventService,
+		in.HeaderService,
 		in.Config.Denom,
 		in.Config.Underlying,
 		in.AccountKeeper,

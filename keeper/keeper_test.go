@@ -249,7 +249,17 @@ func TestNewKeeper(t *testing.T) {
 	// ACT: Attempt to create a new Keeper with overlapping prefixes
 	require.Panics(t, func() {
 		cfg := mocks.MakeTestEncodingConfig("noble")
-		keeper.NewKeeper(cfg.Codec, mocks.FailingStore(mocks.Set, nil), runtime.ProvideEventService(), "uusyc", "uusdc", mocks.AccountKeeper{}, mocks.BankKeeper{}, cfg.InterfaceRegistry)
+		keeper.NewKeeper(
+			cfg.Codec,
+			mocks.FailingStore(mocks.Set, nil),
+			runtime.ProvideEventService(),
+			runtime.ProvideHeaderInfoService(&runtime.AppBuilder{}),
+			"uusyc",
+			"uusdc",
+			mocks.AccountKeeper{},
+			mocks.BankKeeper{},
+			cfg.InterfaceRegistry,
+		)
 	})
 	// ASSERT: The function should've panicked.
 
