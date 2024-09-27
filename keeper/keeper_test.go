@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/noble-assets/halo/v2/keeper"
 	"github.com/noble-assets/halo/v2/types"
 	"github.com/noble-assets/halo/v2/types/entitlements"
 	"github.com/noble-assets/halo/v2/utils"
@@ -14,8 +15,8 @@ import (
 
 func TestSendRestrictionBurn(t *testing.T) {
 	user := utils.TestAccount()
-	keeper, ctx := mocks.HaloKeeper(t)
-	coins := sdk.NewCoins(sdk.NewCoin(keeper.Denom, ONE))
+	k, ctx := mocks.HaloKeeper(t)
+	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
 	testCases := []struct {
 		name    string
@@ -51,14 +52,14 @@ func TestSendRestrictionBurn(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			err := keeper.SetPaused(ctx, testCase.paused)
+			err := k.SetPaused(ctx, testCase.paused)
 			require.NoError(t, err)
 			// ARRANGE: Set allowed state.
-			err = keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
 			require.NoError(t, err)
 
 			// ACT: Attempt to burn.
-			_, err = keeper.SendRestrictionFn(ctx, user.Bytes, types.ModuleAddress, coins)
+			_, err = k.SendRestrictionFn(ctx, user.Bytes, types.ModuleAddress, coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {
@@ -72,8 +73,8 @@ func TestSendRestrictionBurn(t *testing.T) {
 
 func TestSendRestrictionMint(t *testing.T) {
 	user := utils.TestAccount()
-	keeper, ctx := mocks.HaloKeeper(t)
-	coins := sdk.NewCoins(sdk.NewCoin(keeper.Denom, ONE))
+	k, ctx := mocks.HaloKeeper(t)
+	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
 	testCases := []struct {
 		name    string
@@ -109,14 +110,14 @@ func TestSendRestrictionMint(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			err := keeper.SetPaused(ctx, testCase.paused)
+			err := k.SetPaused(ctx, testCase.paused)
 			require.NoError(t, err)
 			// ARRANGE: Set allowed state.
-			err = keeper.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
+			err = k.SetUserRole(ctx, user.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.allowed)
 			require.NoError(t, err)
 
 			// ACT: Attempt to mint.
-			_, err = keeper.SendRestrictionFn(ctx, types.ModuleAddress, user.Bytes, coins)
+			_, err = k.SendRestrictionFn(ctx, types.ModuleAddress, user.Bytes, coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {
@@ -130,8 +131,8 @@ func TestSendRestrictionMint(t *testing.T) {
 
 func TestSendRestrictionTransfer(t *testing.T) {
 	alice, bob := utils.TestAccount(), utils.TestAccount()
-	keeper, ctx := mocks.HaloKeeper(t)
-	coins := sdk.NewCoins(sdk.NewCoin(keeper.Denom, ONE))
+	k, ctx := mocks.HaloKeeper(t)
+	coins := sdk.NewCoins(sdk.NewCoin(k.Denom, ONE))
 
 	testCases := []struct {
 		name             string
@@ -218,17 +219,17 @@ func TestSendRestrictionTransfer(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			// ARRANGE: Set paused state.
-			err := keeper.SetPaused(ctx, testCase.paused)
+			err := k.SetPaused(ctx, testCase.paused)
 			require.NoError(t, err)
 			// ARRANGE: Set sender allowed state.
-			err = keeper.SetUserRole(ctx, alice.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.senderAllowed)
+			err = k.SetUserRole(ctx, alice.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.senderAllowed)
 			require.NoError(t, err)
 			// ARRANGE: Set recipient allowed state.
-			err = keeper.SetUserRole(ctx, bob.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.recipientAllowed)
+			err = k.SetUserRole(ctx, bob.Bytes, entitlements.ROLE_INTERNATIONAL_FEEDER, testCase.recipientAllowed)
 			require.NoError(t, err)
 
 			// ACT: Attempt to transfer.
-			_, err = keeper.SendRestrictionFn(ctx, alice.Bytes, bob.Bytes, testCase.coins)
+			_, err = k.SendRestrictionFn(ctx, alice.Bytes, bob.Bytes, testCase.coins)
 
 			// ASSERT: Send restriction correctly handled test case.
 			if testCase.err != "" {
@@ -238,4 +239,19 @@ func TestSendRestrictionTransfer(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewKeeper(t *testing.T) {
+	// ARRANGE: Set the NoncePrefix to an already existing key
+	types.NoncePrefix = types.OwnerKey
+
+	// ACT: Attempt to create a new Keeper with overlapping prefixes
+	require.Panics(t, func() {
+		cfg := mocks.MakeTestEncodingConfig("noble")
+		keeper.NewKeeper(cfg.Codec, mocks.FailingStore(mocks.Set, nil), "uusyc", "uusdc", mocks.AccountKeeper{}, mocks.BankKeeper{}, cfg.InterfaceRegistry)
+	})
+	// ASSERT: The function should've panicked.
+
+	// ARRANGE: Restore the original NoncePrefix
+	types.NoncePrefix = []byte("nonce/")
 }
