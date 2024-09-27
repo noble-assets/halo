@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/keeper"
 	"github.com/noble-assets/halo/v2/types"
@@ -248,7 +249,7 @@ func TestNewKeeper(t *testing.T) {
 	// ACT: Attempt to create a new Keeper with overlapping prefixes
 	require.Panics(t, func() {
 		cfg := mocks.MakeTestEncodingConfig("noble")
-		keeper.NewKeeper(cfg.Codec, mocks.FailingStore(mocks.Set, nil), "uusyc", "uusdc", mocks.AccountKeeper{}, mocks.BankKeeper{}, cfg.InterfaceRegistry)
+		keeper.NewKeeper(cfg.Codec, mocks.FailingStore(mocks.Set, nil), runtime.ProvideEventService(), "uusyc", "uusdc", mocks.AccountKeeper{}, mocks.BankKeeper{}, cfg.InterfaceRegistry)
 	})
 	// ASSERT: The function should've panicked.
 

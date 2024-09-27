@@ -18,8 +18,8 @@ func NewAggregatorMsgServer(keeper *Keeper) aggregator.MsgServer {
 	return &aggregatorMsgServer{Keeper: keeper}
 }
 
-func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregator.MsgReportBalance) (*aggregator.MsgReportBalanceResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k aggregatorMsgServer) ReportBalance(ctx context.Context, msg *aggregator.MsgReportBalance) (*aggregator.MsgReportBalanceResponse, error) {
+	goCtx := sdk.UnwrapSDKContext(ctx)
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregato
 		Balance:   balance,
 		Interest:  msg.Interest,
 		Supply:    msg.TotalSupply,
-		UpdatedAt: ctx.BlockTime().Unix(),
+		UpdatedAt: goCtx.BlockTime().Unix(),
 	}
 	if err = k.SetRound(ctx, id, round); err != nil {
 		return nil, err
@@ -62,20 +62,19 @@ func (k aggregatorMsgServer) ReportBalance(goCtx context.Context, msg *aggregato
 
 	return &aggregator.MsgReportBalanceResponse{
 			RoundId: id,
-		}, ctx.EventManager().EmitTypedEvents(
+		}, goCtx.EventManager().EmitTypedEvents(
 			&aggregator.BalanceReported{
 				RoundId:   id,
 				Balance:   balance,
 				Interest:  msg.Interest,
 				Price:     answer,
-				UpdatedAt: ctx.BlockTime().Unix(),
+				UpdatedAt: goCtx.BlockTime().Unix(),
 			},
 			&aggregator.NextPriceReported{Price: msg.NextPrice},
 		)
 }
 
-func (k aggregatorMsgServer) SetNextPrice(goCtx context.Context, msg *aggregator.MsgSetNextPrice) (*aggregator.MsgSetNextPriceResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k aggregatorMsgServer) SetNextPrice(ctx context.Context, msg *aggregator.MsgSetNextPrice) (*aggregator.MsgSetNextPriceResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -89,13 +88,12 @@ func (k aggregatorMsgServer) SetNextPrice(goCtx context.Context, msg *aggregator
 		return nil, err
 	}
 
-	return &aggregator.MsgSetNextPriceResponse{}, ctx.EventManager().EmitTypedEvent(&aggregator.NextPriceReported{
+	return &aggregator.MsgSetNextPriceResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &aggregator.NextPriceReported{
 		Price: msg.NextPrice,
 	})
 }
 
-func (k aggregatorMsgServer) TransferOwnership(goCtx context.Context, msg *aggregator.MsgTransferOwnership) (*aggregator.MsgTransferOwnershipResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k aggregatorMsgServer) TransferOwnership(ctx context.Context, msg *aggregator.MsgTransferOwnership) (*aggregator.MsgTransferOwnershipResponse, error) {
 	owner, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -109,7 +107,7 @@ func (k aggregatorMsgServer) TransferOwnership(goCtx context.Context, msg *aggre
 		return nil, err
 	}
 
-	return &aggregator.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&aggregator.OwnershipTransferred{
+	return &aggregator.MsgTransferOwnershipResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &aggregator.OwnershipTransferred{
 		PreviousOwner: owner,
 		NewOwner:      msg.NewOwner,
 	})
@@ -117,7 +115,7 @@ func (k aggregatorMsgServer) TransferOwnership(goCtx context.Context, msg *aggre
 
 //
 
-func (k aggregatorMsgServer) EnsureOwner(ctx sdk.Context, signer string) (string, error) {
+func (k aggregatorMsgServer) EnsureOwner(ctx context.Context, signer string) (string, error) {
 	owner := k.GetAggregatorOwner(ctx)
 	if owner == "" {
 		return "", aggregator.ErrNoOwner

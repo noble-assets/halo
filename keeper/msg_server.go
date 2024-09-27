@@ -20,8 +20,7 @@ func NewMsgServer(keeper *Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types.MsgDepositResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k msgServer) Deposit(ctx context.Context, msg *types.MsgDeposit) (*types.MsgDepositResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -39,8 +38,7 @@ func (k msgServer) Deposit(goCtx context.Context, msg *types.MsgDeposit) (*types
 	return &types.MsgDepositResponse{Amount: amount}, err
 }
 
-func (k msgServer) DepositFor(goCtx context.Context, msg *types.MsgDepositFor) (*types.MsgDepositResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k msgServer) DepositFor(ctx context.Context, msg *types.MsgDepositFor) (*types.MsgDepositResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -67,8 +65,7 @@ func (k msgServer) DepositFor(goCtx context.Context, msg *types.MsgDepositFor) (
 	return &types.MsgDepositResponse{Amount: amount}, err
 }
 
-func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*types.MsgWithdrawResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k msgServer) Withdraw(ctx context.Context, msg *types.MsgWithdraw) (*types.MsgWithdrawResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -90,8 +87,7 @@ func (k msgServer) Withdraw(goCtx context.Context, msg *types.MsgWithdraw) (*typ
 	return &types.MsgWithdrawResponse{Amount: underlying}, err
 }
 
-func (k msgServer) WithdrawTo(goCtx context.Context, msg *types.MsgWithdrawTo) (*types.MsgWithdrawResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k msgServer) WithdrawTo(ctx context.Context, msg *types.MsgWithdrawTo) (*types.MsgWithdrawResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -122,9 +118,7 @@ func (k msgServer) WithdrawTo(goCtx context.Context, msg *types.MsgWithdrawTo) (
 	return &types.MsgWithdrawResponse{Amount: underlying}, err
 }
 
-func (k msgServer) WithdrawToAdmin(goCtx context.Context, msg *types.MsgWithdrawToAdmin) (*types.MsgWithdrawResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) WithdrawToAdmin(ctx context.Context, msg *types.MsgWithdrawToAdmin) (*types.MsgWithdrawResponse, error) {
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
@@ -145,8 +139,7 @@ func (k msgServer) WithdrawToAdmin(goCtx context.Context, msg *types.MsgWithdraw
 	return &types.MsgWithdrawResponse{Amount: underlying}, err
 }
 
-func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k msgServer) Burn(ctx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -165,9 +158,7 @@ func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBu
 	return &types.MsgBurnResponse{}, err
 }
 
-func (k msgServer) BurnFor(goCtx context.Context, msg *types.MsgBurnFor) (*types.MsgBurnForResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) BurnFor(ctx context.Context, msg *types.MsgBurnFor) (*types.MsgBurnForResponse, error) {
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
@@ -189,9 +180,7 @@ func (k msgServer) BurnFor(goCtx context.Context, msg *types.MsgBurnFor) (*types
 	return &types.MsgBurnForResponse{}, err
 }
 
-func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMintResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) Mint(ctx context.Context, msg *types.MsgMint) (*types.MsgMintResponse, error) {
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
@@ -216,9 +205,7 @@ func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMi
 	return &types.MsgMintResponse{}, err
 }
 
-func (k msgServer) TradeToFiat(goCtx context.Context, msg *types.MsgTradeToFiat) (*types.MsgTradeToFiatResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) TradeToFiat(ctx context.Context, msg *types.MsgTradeToFiat) (*types.MsgTradeToFiatResponse, error) {
 	signer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
@@ -245,9 +232,7 @@ func (k msgServer) TradeToFiat(goCtx context.Context, msg *types.MsgTradeToFiat)
 	return &types.MsgTradeToFiatResponse{}, err
 }
 
-func (k msgServer) TransferOwnership(goCtx context.Context, msg *types.MsgTransferOwnership) (*types.MsgTransferOwnershipResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) TransferOwnership(ctx context.Context, msg *types.MsgTransferOwnership) (*types.MsgTransferOwnershipResponse, error) {
 	owner := k.GetOwner(ctx)
 	if owner == "" {
 		return nil, types.ErrNoOwner
@@ -264,7 +249,7 @@ func (k msgServer) TransferOwnership(goCtx context.Context, msg *types.MsgTransf
 		return nil, err
 	}
 
-	return &types.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&types.OwnershipTransferred{
+	return &types.MsgTransferOwnershipResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &types.OwnershipTransferred{
 		PreviousOwner: owner,
 		NewOwner:      msg.NewOwner,
 	})

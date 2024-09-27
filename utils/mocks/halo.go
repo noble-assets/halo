@@ -39,6 +39,7 @@ func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper)
 	k := keeper.NewKeeper(
 		cfg.Codec,
 		runtime.NewKVStoreService(key),
+		runtime.ProvideEventService(),
 		"uusyc",
 		"uusdc",
 		account,

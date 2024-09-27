@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/event"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
@@ -23,6 +24,7 @@ type Keeper struct {
 
 	Schema       collections.Schema
 	storeService store.KVStoreService
+	eventService event.Service
 
 	Owner  collections.Item[string]
 	Nonces collections.Map[[]byte, uint64]
@@ -46,6 +48,7 @@ type Keeper struct {
 func NewKeeper(
 	cdc codec.Codec,
 	storeService store.KVStoreService,
+	eventService event.Service,
 	denom string,
 	underlying string,
 	accountKeeper types.AccountKeeper,
@@ -59,6 +62,7 @@ func NewKeeper(
 		Underlying: underlying,
 
 		storeService: storeService,
+		eventService: eventService,
 
 		Owner:  collections.NewItem(builder, types.OwnerKey, "owner", collections.StringValue),
 		Nonces: collections.NewMap(builder, types.NoncePrefix, "nonces", collections.BytesKey, collections.Uint64Value),
@@ -116,7 +120,7 @@ func (k *Keeper) SendRestrictionFn(ctx context.Context, fromAddr, toAddr sdk.Acc
 }
 
 // VerifyWithdrawSignature ensures that the owner has signed a withdrawal.
-func (k *Keeper) VerifyWithdrawSignature(ctx sdk.Context, recipient sdk.AccAddress, amount math.Int, signature []byte) bool {
+func (k *Keeper) VerifyWithdrawSignature(ctx context.Context, recipient sdk.AccAddress, amount math.Int, signature []byte) bool {
 	owner := sdk.MustAccAddressFromBech32(k.GetOwner(ctx))
 	account := k.accountKeeper.GetAccount(ctx, owner)
 
@@ -144,7 +148,7 @@ func (k *Keeper) VerifyWithdrawSignature(ctx sdk.Context, recipient sdk.AccAddre
 }
 
 // burnCoins is an internal helper function to burn.
-func (k *Keeper) burnCoins(ctx sdk.Context, sender sdk.AccAddress, coins sdk.Coins) error {
+func (k *Keeper) burnCoins(ctx context.Context, sender sdk.AccAddress, coins sdk.Coins) error {
 	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, sender, types.ModuleName, coins)
 	if err != nil {
 		return errors.Wrap(err, "unable to transfer from account to module")
@@ -158,7 +162,7 @@ func (k *Keeper) burnCoins(ctx sdk.Context, sender sdk.AccAddress, coins sdk.Coi
 }
 
 // mintCoins is an internal helper function to mint.
-func (k *Keeper) mintCoins(ctx sdk.Context, recipient sdk.AccAddress, coins sdk.Coins) error {
+func (k *Keeper) mintCoins(ctx context.Context, recipient sdk.AccAddress, coins sdk.Coins) error {
 	err := k.bankKeeper.MintCoins(ctx, types.ModuleName, coins)
 	if err != nil {
 		return errors.Wrap(err, "unable to mint to module")
@@ -172,7 +176,7 @@ func (k *Keeper) mintCoins(ctx sdk.Context, recipient sdk.AccAddress, coins sdk.
 }
 
 // depositFor is an internal helper function to deposit.
-func (k *Keeper) depositFor(ctx sdk.Context, signer sdk.AccAddress, recipient sdk.AccAddress, underlying math.Int) (amount math.Int, err error) {
+func (k *Keeper) depositFor(ctx context.Context, signer sdk.AccAddress, recipient sdk.AccAddress, underlying math.Int) (amount math.Int, err error) {
 	lastRoundId := k.GetLastRoundId(ctx)
 	round, found := k.GetRound(ctx, lastRoundId)
 	if !found {
@@ -192,15 +196,14 @@ func (k *Keeper) depositFor(ctx sdk.Context, signer sdk.AccAddress, recipient sd
 	if err != nil {
 		return amount, errors.Wrap(err, "unable to transfer from account to module")
 	}
-
-	return amount, ctx.EventManager().EmitTypedEvent(&types.Deposit{
+	return amount, k.eventService.EventManager(ctx).Emit(ctx, &types.Deposit{
 		From:   signer.String(),
 		Amount: underlying,
 	})
 }
 
 // withdrawTo is an internal helper function to withdraw.
-func (k *Keeper) withdrawTo(ctx sdk.Context, signer sdk.AccAddress, recipient sdk.AccAddress, amount math.Int) (underlying math.Int, err error) {
+func (k *Keeper) withdrawTo(ctx context.Context, signer sdk.AccAddress, recipient sdk.AccAddress, amount math.Int) (underlying math.Int, err error) {
 	lastRoundId := k.GetLastRoundId(ctx)
 	round, found := k.GetRound(ctx, lastRoundId)
 	if !found {
@@ -221,7 +224,7 @@ func (k *Keeper) withdrawTo(ctx sdk.Context, signer sdk.AccAddress, recipient sd
 		return underlying, errors.Wrap(err, "unable to transfer from module to account")
 	}
 
-	return underlying, ctx.EventManager().EmitTypedEvent(&types.Withdrawal{
+	return underlying, k.eventService.EventManager(ctx).Emit(ctx, &types.Withdrawal{
 		To:     recipient.String(),
 		Amount: underlying,
 	})

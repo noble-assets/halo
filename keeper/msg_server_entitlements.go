@@ -19,8 +19,7 @@ func NewEntitlementsMsgServer(keeper *Keeper) entitlements.MsgServer {
 	return &entitlementsMsgServer{Keeper: keeper}
 }
 
-func (k entitlementsMsgServer) SetPublicCapability(goCtx context.Context, msg *entitlements.MsgSetPublicCapability) (*entitlements.MsgSetPublicCapabilityResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) SetPublicCapability(ctx context.Context, msg *entitlements.MsgSetPublicCapability) (*entitlements.MsgSetPublicCapabilityResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -35,14 +34,13 @@ func (k entitlementsMsgServer) SetPublicCapability(goCtx context.Context, msg *e
 		return nil, err
 	}
 
-	return &entitlements.MsgSetPublicCapabilityResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.PublicCapabilityUpdated{
+	return &entitlements.MsgSetPublicCapabilityResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.PublicCapabilityUpdated{
 		Method:  msg.Method,
 		Enabled: msg.Enabled,
 	})
 }
 
-func (k entitlementsMsgServer) SetRoleCapability(goCtx context.Context, msg *entitlements.MsgSetRoleCapability) (*entitlements.MsgSetRoleCapabilityResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) SetRoleCapability(ctx context.Context, msg *entitlements.MsgSetRoleCapability) (*entitlements.MsgSetRoleCapabilityResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -62,15 +60,14 @@ func (k entitlementsMsgServer) SetRoleCapability(goCtx context.Context, msg *ent
 		return nil, err
 	}
 
-	return &entitlements.MsgSetRoleCapabilityResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.RoleCapabilityUpdated{
+	return &entitlements.MsgSetRoleCapabilityResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.RoleCapabilityUpdated{
 		Role:    msg.Role,
 		Method:  msg.Method,
 		Enabled: msg.Enabled,
 	})
 }
 
-func (k entitlementsMsgServer) SetUserRole(goCtx context.Context, msg *entitlements.MsgSetUserRole) (*entitlements.MsgSetUserRoleResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) SetUserRole(ctx context.Context, msg *entitlements.MsgSetUserRole) (*entitlements.MsgSetUserRoleResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -90,15 +87,14 @@ func (k entitlementsMsgServer) SetUserRole(goCtx context.Context, msg *entitleme
 		return nil, err
 	}
 
-	return &entitlements.MsgSetUserRoleResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.UserRoleUpdated{
+	return &entitlements.MsgSetUserRoleResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.UserRoleUpdated{
 		User:    msg.User,
 		Role:    msg.Role,
 		Enabled: msg.Enabled,
 	})
 }
 
-func (k entitlementsMsgServer) Pause(goCtx context.Context, msg *entitlements.MsgPause) (*entitlements.MsgPauseResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) Pause(ctx context.Context, msg *entitlements.MsgPause) (*entitlements.MsgPauseResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -108,13 +104,12 @@ func (k entitlementsMsgServer) Pause(goCtx context.Context, msg *entitlements.Ms
 		return nil, err
 	}
 
-	return &entitlements.MsgPauseResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.Paused{
+	return &entitlements.MsgPauseResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.Paused{
 		Account: msg.Signer,
 	})
 }
 
-func (k entitlementsMsgServer) Unpause(goCtx context.Context, msg *entitlements.MsgUnpause) (*entitlements.MsgUnpauseResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) Unpause(ctx context.Context, msg *entitlements.MsgUnpause) (*entitlements.MsgUnpauseResponse, error) {
 	_, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -124,13 +119,12 @@ func (k entitlementsMsgServer) Unpause(goCtx context.Context, msg *entitlements.
 		return nil, err
 	}
 
-	return &entitlements.MsgUnpauseResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.Unpaused{
+	return &entitlements.MsgUnpauseResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.Unpaused{
 		Account: msg.Signer,
 	})
 }
 
-func (k entitlementsMsgServer) TransferOwnership(goCtx context.Context, msg *entitlements.MsgTransferOwnership) (*entitlements.MsgTransferOwnershipResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k entitlementsMsgServer) TransferOwnership(ctx context.Context, msg *entitlements.MsgTransferOwnership) (*entitlements.MsgTransferOwnershipResponse, error) {
 	owner, err := k.EnsureOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
@@ -144,7 +138,7 @@ func (k entitlementsMsgServer) TransferOwnership(goCtx context.Context, msg *ent
 		return nil, err
 	}
 
-	return &entitlements.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&entitlements.OwnershipTransferred{
+	return &entitlements.MsgTransferOwnershipResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &entitlements.OwnershipTransferred{
 		PreviousOwner: owner,
 		NewOwner:      msg.NewOwner,
 	})
@@ -152,7 +146,7 @@ func (k entitlementsMsgServer) TransferOwnership(goCtx context.Context, msg *ent
 
 //
 
-func (k entitlementsMsgServer) EnsureOwner(ctx sdk.Context, signer string) (string, error) {
+func (k entitlementsMsgServer) EnsureOwner(ctx context.Context, signer string) (string, error) {
 	owner := k.GetEntitlementsOwner(ctx)
 	if owner == "" {
 		return "", entitlements.ErrNoOwner
