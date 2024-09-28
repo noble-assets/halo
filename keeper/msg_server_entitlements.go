@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/types/entitlements"
 )
 
@@ -73,7 +72,7 @@ func (k entitlementsMsgServer) SetUserRole(ctx context.Context, msg *entitlement
 		return nil, err
 	}
 
-	user, err := sdk.AccAddressFromBech32(msg.User)
+	user, err := k.addressCodec.StringToBytes(msg.User)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode user address %s", msg.User)
 	}

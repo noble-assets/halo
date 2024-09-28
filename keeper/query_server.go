@@ -2,12 +2,8 @@ package keeper
 
 import (
 	"context"
-	"encoding/binary"
 
 	"cosmossdk.io/errors"
-	"cosmossdk.io/store/prefix"
-	"github.com/cosmos/cosmos-sdk/runtime"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/noble-assets/halo/v2/types"
@@ -38,14 +34,15 @@ func (k queryServer) Nonces(ctx context.Context, req *types.QueryNonces) (*types
 		return nil, errorstypes.ErrInvalidRequest
 	}
 
-	adapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	store := prefix.NewStore(adapter, types.NoncePrefix)
-
 	nonces := make(map[string]uint64)
-	pagination, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-		address := sdk.AccAddress(key).String()
-		nonces[address] = binary.BigEndian.Uint64(value)
-		return nil
+	_, pagination, err := query.CollectionPaginate(ctx, k.Keeper.Nonces, req.Pagination, func(key []byte, nonce uint64) (string, error) {
+		address, err := k.addressCodec.BytesToString(key)
+		if err != nil {
+			return "", err
+		}
+
+		nonces[address] = nonce
+		return "", nil
 	})
 
 	return &types.QueryNoncesResponse{
@@ -59,7 +56,7 @@ func (k queryServer) Nonce(ctx context.Context, req *types.QueryNonce) (*types.Q
 		return nil, errorstypes.ErrInvalidRequest
 	}
 
-	address, err := sdk.AccAddressFromBech32(req.Address)
+	address, err := k.addressCodec.StringToBytes(req.Address)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode address %s", req.Address)
 	}

@@ -338,7 +338,7 @@ func TestEntitlementsUserRoles(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(k.GetUserRoles(ctx, userAddress)))
 
-	// ACT: Attempt to add an additional user role.
+	// ACT: Attempt to add additional role to user.
 	_, err = server.SetUserRole(ctx, &entitlements.MsgSetUserRole{
 		Signer:  owner.Address,
 		User:    bob.Address,

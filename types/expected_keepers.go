@@ -3,12 +3,10 @@ package types
 import (
 	"context"
 
-	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type AccountKeeper interface {
-	AddressCodec() address.Codec
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 }
 

@@ -1,6 +1,7 @@
 package halo
 
 import (
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/keeper"
 	"github.com/noble-assets/halo/v2/types"
@@ -8,7 +9,7 @@ import (
 	"github.com/noble-assets/halo/v2/types/entitlements"
 )
 
-func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) {
+func InitGenesis(ctx sdk.Context, k *keeper.Keeper, cdc address.Codec, genesis types.GenesisState) {
 	if err := k.SetAggregatorOwner(ctx, genesis.AggregatorState.Owner); err != nil {
 		panic(err)
 	}
@@ -38,7 +39,7 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) 
 		}
 	}
 	for _, entry := range genesis.EntitlementsState.UserRoles {
-		user := sdk.MustAccAddressFromBech32(entry.User)
+		user, _ := cdc.StringToBytes(entry.User)
 		if err := k.SetUserRole(ctx, user, entry.Role, entry.Enabled); err != nil {
 			panic(err)
 		}
@@ -48,7 +49,7 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) 
 		panic(err)
 	}
 	for account, nonce := range genesis.Nonces {
-		address := sdk.MustAccAddressFromBech32(account)
+		address, _ := cdc.StringToBytes(account)
 		if err := k.SetNonce(ctx, address, nonce); err != nil {
 			panic(err)
 		}

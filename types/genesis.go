@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/types/aggregator"
 	"github.com/noble-assets/halo/v2/types/entitlements"
@@ -53,23 +54,23 @@ func DefaultGenesisState() *GenesisState {
 	}
 }
 
-func (gs *GenesisState) Validate() error {
-	if err := gs.AggregatorState.Validate(); err != nil {
+func (gs *GenesisState) Validate(cdc address.Codec) error {
+	if err := gs.AggregatorState.Validate(cdc); err != nil {
 		return err
 	}
 
-	if err := gs.EntitlementsState.Validate(); err != nil {
+	if err := gs.EntitlementsState.Validate(cdc); err != nil {
 		return err
 	}
 
 	if gs.Owner != "" {
-		if _, err := sdk.AccAddressFromBech32(gs.Owner); err != nil {
+		if _, err := cdc.StringToBytes(gs.Owner); err != nil {
 			return fmt.Errorf("invalid owner address (%s): %s", gs.Owner, err)
 		}
 	}
 
 	for address := range gs.Nonces {
-		if _, err := sdk.AccAddressFromBech32(address); err != nil {
+		if _, err := cdc.StringToBytes(address); err != nil {
 			return fmt.Errorf("invalid user address (%s): %s", address, err)
 		}
 	}

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 
@@ -23,7 +24,7 @@ func NewMsgServer(keeper *Keeper) types.MsgServer {
 func (k msgServer) Deposit(ctx context.Context, msg *types.MsgDeposit) (*types.MsgDepositResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
@@ -41,18 +42,18 @@ func (k msgServer) Deposit(ctx context.Context, msg *types.MsgDeposit) (*types.M
 func (k msgServer) DepositFor(ctx context.Context, msg *types.MsgDepositFor) (*types.MsgDepositResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.CanCall(ctx, signer, method) {
 		return nil, fmt.Errorf("%s cannot execute %s", msg.Signer, method)
 	}
-	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	recipient, err := k.addressCodec.StringToBytes(msg.Recipient)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode recipient address %s", msg.Recipient)
 	}
-	if !signer.Equals(recipient) {
+	if !bytes.Equal(signer, recipient) {
 		if !k.CanCall(ctx, recipient, "transfer") {
 			return nil, fmt.Errorf("%s cannot receive %s", msg.Recipient, k.Denom)
 		}
@@ -68,7 +69,7 @@ func (k msgServer) DepositFor(ctx context.Context, msg *types.MsgDepositFor) (*t
 func (k msgServer) Withdraw(ctx context.Context, msg *types.MsgWithdraw) (*types.MsgWithdrawResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
@@ -90,18 +91,18 @@ func (k msgServer) Withdraw(ctx context.Context, msg *types.MsgWithdraw) (*types
 func (k msgServer) WithdrawTo(ctx context.Context, msg *types.MsgWithdrawTo) (*types.MsgWithdrawResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.CanCall(ctx, signer, method) {
 		return nil, fmt.Errorf("%s cannot execute %s", msg.Signer, method)
 	}
-	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	recipient, err := k.addressCodec.StringToBytes(msg.Recipient)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode recipient address %s", msg.Recipient)
 	}
-	if !signer.Equals(recipient) {
+	if !bytes.Equal(signer, recipient) {
 		if !k.CanCall(ctx, recipient, "transfer") {
 			return nil, fmt.Errorf("%s cannot receive %s", msg.Recipient, k.Denom)
 		}
@@ -119,18 +120,18 @@ func (k msgServer) WithdrawTo(ctx context.Context, msg *types.MsgWithdrawTo) (*t
 }
 
 func (k msgServer) WithdrawToAdmin(ctx context.Context, msg *types.MsgWithdrawToAdmin) (*types.MsgWithdrawResponse, error) {
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.HasRole(ctx, signer, entitlements.ROLE_FUND_ADMIN) {
 		return nil, types.ErrInvalidFundAdmin
 	}
-	from, err := sdk.AccAddressFromBech32(msg.From)
+	from, err := k.addressCodec.StringToBytes(msg.From)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode from address %s", msg.From)
 	}
-	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	recipient, err := k.addressCodec.StringToBytes(msg.Recipient)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode recipient address %s", msg.Recipient)
 	}
@@ -142,7 +143,7 @@ func (k msgServer) WithdrawToAdmin(ctx context.Context, msg *types.MsgWithdrawTo
 func (k msgServer) Burn(ctx context.Context, msg *types.MsgBurn) (*types.MsgBurnResponse, error) {
 	method := sdk.MsgTypeURL(msg)
 
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
@@ -159,14 +160,14 @@ func (k msgServer) Burn(ctx context.Context, msg *types.MsgBurn) (*types.MsgBurn
 }
 
 func (k msgServer) BurnFor(ctx context.Context, msg *types.MsgBurnFor) (*types.MsgBurnForResponse, error) {
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.HasRole(ctx, signer, entitlements.ROLE_FUND_ADMIN) {
 		return nil, types.ErrInvalidFundAdmin
 	}
-	from, err := sdk.AccAddressFromBech32(msg.From)
+	from, err := k.addressCodec.StringToBytes(msg.From)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode from address %s", msg.From)
 	}
@@ -181,14 +182,14 @@ func (k msgServer) BurnFor(ctx context.Context, msg *types.MsgBurnFor) (*types.M
 }
 
 func (k msgServer) Mint(ctx context.Context, msg *types.MsgMint) (*types.MsgMintResponse, error) {
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.HasRole(ctx, signer, entitlements.ROLE_FUND_ADMIN) {
 		return nil, types.ErrInvalidFundAdmin
 	}
-	to, err := sdk.AccAddressFromBech32(msg.To)
+	to, err := k.addressCodec.StringToBytes(msg.To)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode to address %s", msg.To)
 	}
@@ -206,14 +207,14 @@ func (k msgServer) Mint(ctx context.Context, msg *types.MsgMint) (*types.MsgMint
 }
 
 func (k msgServer) TradeToFiat(ctx context.Context, msg *types.MsgTradeToFiat) (*types.MsgTradeToFiatResponse, error) {
-	signer, err := sdk.AccAddressFromBech32(msg.Signer)
+	signer, err := k.addressCodec.StringToBytes(msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode signer address %s", msg.Signer)
 	}
 	if !k.HasRole(ctx, signer, entitlements.ROLE_FUND_ADMIN) {
 		return nil, types.ErrInvalidFundAdmin
 	}
-	recipient, err := sdk.AccAddressFromBech32(msg.Recipient)
+	recipient, err := k.addressCodec.StringToBytes(msg.Recipient)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode recipient address %s", msg.Recipient)
 	}

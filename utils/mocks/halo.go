@@ -5,6 +5,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectestutil "github.com/cosmos/cosmos-sdk/codec/testutil"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/std"
@@ -36,6 +37,7 @@ func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper)
 	cfg := MakeTestEncodingConfig("noble")
 	types.RegisterInterfaces(cfg.InterfaceRegistry)
 
+	cdc := address.NewBech32Codec("noble")
 	k := keeper.NewKeeper(
 		cfg.Codec,
 		runtime.NewKVStoreService(key),
@@ -43,6 +45,7 @@ func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper)
 		runtime.ProvideHeaderInfoService(&runtime.AppBuilder{}),
 		"uusyc",
 		"uusdc",
+		cdc,
 		account,
 		bank,
 		cfg.InterfaceRegistry,
@@ -51,7 +54,7 @@ func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper)
 	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)
 	k.SetBankKeeper(bank)
 
-	halo.InitGenesis(wrapper.Ctx, k, *types.DefaultGenesisState())
+	halo.InitGenesis(wrapper.Ctx, k, cdc, *types.DefaultGenesisState())
 	return k, wrapper.Ctx
 }
 

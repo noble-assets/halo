@@ -125,7 +125,7 @@ func (k *Keeper) GetAllUserRoles(ctx context.Context) []entitlements.UserRole {
 	var userRoles []entitlements.UserRole
 
 	_ = k.UserRoles.Walk(ctx, nil, func(key collections.Pair[[]byte, uint64], enabled bool) (stop bool, err error) {
-		address, _ := k.accountKeeper.AddressCodec().BytesToString(key.K1())
+		address, _ := k.addressCodec.BytesToString(key.K1())
 		userRoles = append(userRoles, entitlements.UserRole{
 			User:    address,
 			Role:    entitlements.Role(key.K2()),

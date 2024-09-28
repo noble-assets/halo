@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/event"
 	"cosmossdk.io/core/header"
@@ -27,7 +28,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/halo module consensus version.
-const ConsensusVersion = 2
+const ConsensusVersion = 1
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -40,10 +41,12 @@ var (
 
 //
 
-type AppModuleBasic struct{}
+type AppModuleBasic struct {
+	addressCodec address.Codec
+}
 
-func NewAppModuleBasic() AppModuleBasic {
-	return AppModuleBasic{}
+func NewAppModuleBasic(addressCodec address.Codec) AppModuleBasic {
+	return AppModuleBasic{addressCodec: addressCodec}
 }
 
 func (AppModuleBasic) Name() string { return types.ModuleName }
@@ -74,13 +77,13 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
+func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genesis types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &genesis); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 
-	return genesis.Validate()
+	return genesis.Validate(b.addressCodec)
 }
 
 //
@@ -91,9 +94,9 @@ type AppModule struct {
 	keeper *keeper.Keeper
 }
 
-func NewAppModule(keeper *keeper.Keeper) AppModule {
+func NewAppModule(keeper *keeper.Keeper, addressCodec address.Codec) AppModule {
 	return AppModule{
-		AppModuleBasic: NewAppModuleBasic(),
+		AppModuleBasic: NewAppModuleBasic(addressCodec),
 		keeper:         keeper,
 	}
 }
@@ -108,7 +111,7 @@ func (m AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.Raw
 	var genesis types.GenesisState
 	cdc.MustUnmarshalJSON(bz, &genesis)
 
-	InitGenesis(ctx, m.keeper, genesis)
+	InitGenesis(ctx, m.keeper, m.addressCodec, genesis)
 }
 
 func (m AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
@@ -155,6 +158,7 @@ type ModuleInputs struct {
 	HeaderService     header.Service
 	InterfaceRegistry codectypes.InterfaceRegistry
 
+	AddressCodec  address.Codec
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
 }
@@ -175,11 +179,12 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.HeaderService,
 		in.Config.Denom,
 		in.Config.Underlying,
+		in.AddressCodec,
 		in.AccountKeeper,
 		in.BankKeeper,
 		in.InterfaceRegistry,
 	)
-	m := NewAppModule(k)
+	m := NewAppModule(k, in.AddressCodec)
 
 	return ModuleOutputs{Keeper: k, Module: m, Restrictions: k.SendRestrictionFn}
 }

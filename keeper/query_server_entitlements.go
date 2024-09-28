@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/noble-assets/halo/v2/types/entitlements"
 )
@@ -64,7 +63,7 @@ func (k entitlementsQueryServer) UserCapability(ctx context.Context, req *entitl
 		return nil, errorstypes.ErrInvalidRequest
 	}
 
-	address, err := sdk.AccAddressFromBech32(req.Address)
+	address, err := k.addressCodec.StringToBytes(req.Address)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to decode address %s", req.Address)
 	}

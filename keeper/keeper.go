@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/core/address"
 	"cosmossdk.io/core/event"
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
@@ -42,6 +43,7 @@ type Keeper struct {
 	RoleCapabilities   collections.Map[collections.Pair[string, uint64], bool]
 	UserRoles          collections.Map[collections.Pair[[]byte, uint64], bool]
 
+	addressCodec      address.Codec
 	accountKeeper     types.AccountKeeper
 	bankKeeper        types.BankKeeper
 	interfaceRegistry codectypes.InterfaceRegistry
@@ -54,6 +56,7 @@ func NewKeeper(
 	headerService header.Service,
 	denom string,
 	underlying string,
+	addressCodec address.Codec,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	interfaceRegistry codectypes.InterfaceRegistry,
@@ -64,6 +67,7 @@ func NewKeeper(
 		Denom:      denom,
 		Underlying: underlying,
 
+		addressCodec:  addressCodec,
 		storeService:  storeService,
 		eventService:  eventService,
 		headerService: headerService,
@@ -125,7 +129,7 @@ func (k *Keeper) SendRestrictionFn(ctx context.Context, fromAddr, toAddr sdk.Acc
 
 // VerifyWithdrawSignature ensures that the owner has signed a withdrawal.
 func (k *Keeper) VerifyWithdrawSignature(ctx context.Context, recipient sdk.AccAddress, amount math.Int, signature []byte) bool {
-	owner := sdk.MustAccAddressFromBech32(k.GetOwner(ctx))
+	owner, _ := k.addressCodec.StringToBytes(k.GetOwner(ctx))
 	account := k.accountKeeper.GetAccount(ctx, owner)
 
 	if account == nil || account.GetPubKey() == nil {

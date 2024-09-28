@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"cosmossdk.io/math"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/noble-assets/halo/v2/keeper"
@@ -256,6 +257,7 @@ func TestNewKeeper(t *testing.T) {
 			runtime.ProvideHeaderInfoService(&runtime.AppBuilder{}),
 			"uusyc",
 			"uusdc",
+			address.NewBech32Codec("noble"),
 			mocks.AccountKeeper{},
 			mocks.BankKeeper{},
 			cfg.InterfaceRegistry,

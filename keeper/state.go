@@ -24,7 +24,7 @@ func (k *Keeper) GetNonces(ctx context.Context) map[string]uint64 {
 	nonces := make(map[string]uint64)
 
 	_ = k.Nonces.Walk(ctx, nil, func(bz []byte, nonce uint64) (stop bool, err error) {
-		address, _ := k.accountKeeper.AddressCodec().BytesToString(bz)
+		address, _ := k.addressCodec.BytesToString(bz)
 
 		nonces[address] = nonce
 		return false, nil
