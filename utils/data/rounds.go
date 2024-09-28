@@ -1,14 +1,20 @@
+// Copyright 2024 NASD Inc.
+//
+// Use of this source code is governed by a BSL-style
+// license that can be found in the LICENSE file or at
+// https://mariadb.com/bsl11.
+
 package data
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/utils"
-	"github.com/noble-assets/halo/x/halo/types/aggregator"
+	"cosmossdk.io/math"
+	"github.com/noble-assets/halo/v2/types/aggregator"
+	"github.com/noble-assets/halo/v2/utils"
 )
 
 var EthereumRounds = []struct {
 	Msg    aggregator.MsgReportBalance
-	Answer sdk.Int
+	Answer math.Int
 }{
 	{
 		// https://etherscan.io/tx/0xbcba4db502a72e51a05b378d2e5867be4c60936585cedaf5aad90002f0599428

@@ -1,16 +1,28 @@
+// Copyright 2024 NASD Inc.
+//
+// Use of this source code is governed by a BSL-style
+// license that can be found in the LICENSE file or at
+// https://mariadb.com/bsl11.
+
 package mocks
 
 import (
 	"testing"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	codectestutil "github.com/cosmos/cosmos-sdk/codec/testutil"
+	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/x/halo"
-	"github.com/noble-assets/halo/x/halo/keeper"
-	"github.com/noble-assets/halo/x/halo/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	"github.com/noble-assets/halo/v2"
+	"github.com/noble-assets/halo/v2/keeper"
+	"github.com/noble-assets/halo/v2/types"
 )
 
 func HaloKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
@@ -20,36 +32,60 @@ func HaloKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		BankKeeper{
 			Restriction: NoOpSendRestrictionFn,
 		},
-		FTFKeeper{
-			Paused: false,
-		},
 	)
 }
 
-func HaloKeeperWithKeepers(_ testing.TB, account AccountKeeper, bank BankKeeper, ftf FTFKeeper) (*keeper.Keeper, sdk.Context) {
+func HaloKeeperWithKeepers(t testing.TB, account AccountKeeper, bank BankKeeper) (*keeper.Keeper, sdk.Context) {
 	key := storetypes.NewKVStoreKey(types.ModuleName)
-	tkey := storetypes.NewTransientStoreKey("transient_halo")
-	ctx := testutil.DefaultContext(key, tkey)
+	tkey := storetypes.NewTransientStoreKey("transient_authority")
+	wrapper := testutil.DefaultContextWithDB(t, key, tkey)
 
-	registry := codectypes.NewInterfaceRegistry()
-	types.RegisterInterfaces(registry)
-	cdc := codec.NewProtoCodec(registry)
+	cfg := MakeTestEncodingConfig("noble")
+	types.RegisterInterfaces(cfg.InterfaceRegistry)
 
+	cdc := address.NewBech32Codec("noble")
 	k := keeper.NewKeeper(
-		cdc,
-		key,
+		cfg.Codec,
+		runtime.NewKVStoreService(key),
+		runtime.ProvideEventService(),
+		runtime.ProvideHeaderInfoService(&runtime.AppBuilder{}),
 		"uusyc",
 		"uusdc",
+		cdc,
 		account,
-		nil,
-		ftf,
-		registry,
+		bank,
+		cfg.InterfaceRegistry,
 	)
 
 	bank = bank.WithSendCoinsRestriction(k.SendRestrictionFn)
 	k.SetBankKeeper(bank)
 
-	halo.InitGenesis(ctx, k, *types.DefaultGenesisState())
+	halo.InitGenesis(wrapper.Ctx, k, cdc, *types.DefaultGenesisState())
+	return k, wrapper.Ctx
+}
 
-	return k, ctx
+// MakeTestEncodingConfig is a modified testutil.MakeTestEncodingConfig that
+// sets a custom Bech32 prefix in the interface registry.
+func MakeTestEncodingConfig(prefix string, modules ...module.AppModuleBasic) moduletestutil.TestEncodingConfig {
+	aminoCodec := codec.NewLegacyAmino()
+	interfaceRegistry := codectestutil.CodecOptions{
+		AccAddressPrefix: prefix,
+	}.NewInterfaceRegistry()
+	codec := codec.NewProtoCodec(interfaceRegistry)
+
+	encCfg := moduletestutil.TestEncodingConfig{
+		InterfaceRegistry: interfaceRegistry,
+		Codec:             codec,
+		TxConfig:          tx.NewTxConfig(codec, tx.DefaultSignModes),
+		Amino:             aminoCodec,
+	}
+
+	mb := module.NewBasicManager(modules...)
+
+	std.RegisterLegacyAminoCodec(encCfg.Amino)
+	std.RegisterInterfaces(encCfg.InterfaceRegistry)
+	mb.RegisterLegacyAminoCodec(encCfg.Amino)
+	mb.RegisterInterfaces(encCfg.InterfaceRegistry)
+
+	return encCfg
 }

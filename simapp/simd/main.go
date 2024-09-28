@@ -1,13 +1,19 @@
+// Copyright 2024 NASD Inc.
+//
+// Use of this source code is governed by a BSL-style
+// license that can be found in the LICENSE file or at
+// https://mariadb.com/bsl11.
+
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/cosmos/cosmos-sdk/server"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/simapp"
-	"github.com/noble-assets/halo/simapp/simd/cmd"
+	"github.com/noble-assets/halo/v2/simapp"
+	"github.com/noble-assets/halo/v2/simapp/simd/cmd"
 )
 
 var (
@@ -32,14 +38,9 @@ func main() {
 	config.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
 	config.Seal()
 
-	rootCmd, _ := cmd.NewRootCmd()
-	if err := svrcmd.Execute(rootCmd, simapp.DefaultNodeHome); err != nil {
-		switch e := err.(type) {
-		case server.ErrorCode:
-			os.Exit(e.Code)
-
-		default:
-			os.Exit(1)
-		}
+	rootCmd := cmd.NewRootCmd()
+	if err := svrcmd.Execute(rootCmd, "", simapp.DefaultNodeHome); err != nil {
+		fmt.Fprintln(rootCmd.OutOrStderr(), err)
+		os.Exit(1)
 	}
 }

@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package halo.v1;
 
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "halo/aggregator/v1/genesis.proto";
 import "halo/entitlements/v1/genesis.proto";
 
-option go_package = "github.com/noble-assets/halo/x/halo/types";
+option go_package = "github.com/noble-assets/halo/v2/types";
 
 message GenesisState {
   // aggregator_state is the genesis state of the aggregator submodule.
@@ -15,7 +16,7 @@ message GenesisState {
   entitlements.v1.GenesisState entitlements_state = 2 [(gogoproto.nullable) = false];
 
   // owner is the address that can control this module.
-  string owner = 3;
+  string owner = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
   // nonces contains the withdrawal nonce per user.
   map<string, uint64> nonces = 4;

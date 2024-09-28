@@ -1,10 +1,16 @@
+// Copyright 2024 NASD Inc.
+//
+// Use of this source code is governed by a BSL-style
+// license that can be found in the LICENSE file or at
+// https://mariadb.com/bsl11.
+
 package utils
 
 import (
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cosmos "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 )
 
 type Account struct {

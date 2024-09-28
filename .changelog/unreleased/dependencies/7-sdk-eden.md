@@ -1,0 +1,1 @@
+- Upgrade Cosmos SDK to the latest `v0.50.x` release.
