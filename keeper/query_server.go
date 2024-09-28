@@ -1,3 +1,9 @@
+// Copyright 2024 NASD Inc.
+//
+// Use of this source code is governed by a BSL-style
+// license that can be found in the LICENSE file or at
+// https://mariadb.com/bsl11.
+
 package keeper
 
 import (
@@ -36,11 +42,7 @@ func (k queryServer) Nonces(ctx context.Context, req *types.QueryNonces) (*types
 
 	nonces := make(map[string]uint64)
 	_, pagination, err := query.CollectionPaginate(ctx, k.Keeper.Nonces, req.Pagination, func(key []byte, nonce uint64) (string, error) {
-		address, err := k.addressCodec.BytesToString(key)
-		if err != nil {
-			return "", err
-		}
-
+		address, _ := k.addressCodec.BytesToString(key)
 		nonces[address] = nonce
 		return "", nil
 	})

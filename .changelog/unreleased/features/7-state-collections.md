@@ -1,0 +1,1 @@
+- Utilize [collections](https://docs.cosmos.network/v0.50/build/packages/collections) for managing module state.
