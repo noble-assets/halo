@@ -464,7 +464,7 @@ func TestEntitlementsUserCapability(t *testing.T) {
 	tmpRole := k.RoleCapabilities
 	k.RoleCapabilities = collections.NewMap(
 		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
-		entitlements.CapabilityPrefix, "entitlements_role_capabilities", collections.PairKeyCodec(collections.StringKey, collections.Uint64Key), collections.BoolValue,
+		entitlements.CapabilityPrefix, "entitlements_role_capabilities", collections.BytesKey, collections.BoolValue,
 	)
 
 	// ACT: Attempt set role capability with failing RoleCapabilities collection store.

@@ -46,7 +46,7 @@ type Keeper struct {
 	EntitlementsOwner  collections.Item[string]
 	Paused             collections.Item[bool]
 	PublicCapabilities collections.Map[string, bool]
-	RoleCapabilities   collections.Map[collections.Pair[string, uint64], bool]
+	RoleCapabilities   collections.Map[[]byte, bool]
 	UserRoles          collections.Map[collections.Pair[[]byte, uint64], bool]
 
 	addressCodec      address.Codec
@@ -89,7 +89,7 @@ func NewKeeper(
 		EntitlementsOwner:  collections.NewItem(builder, entitlements.OwnerKey, "entitlements_owner", collections.StringValue),
 		Paused:             collections.NewItem(builder, entitlements.PausedKey, "entitlements_paused", collections.BoolValue),
 		PublicCapabilities: collections.NewMap(builder, entitlements.PublicPrefix, "entitlements_public_capabilities", collections.StringKey, collections.BoolValue),
-		RoleCapabilities:   collections.NewMap(builder, entitlements.CapabilityPrefix, "entitlements_role_capabilities", collections.PairKeyCodec(collections.StringKey, collections.Uint64Key), collections.BoolValue),
+		RoleCapabilities:   collections.NewMap(builder, entitlements.CapabilityPrefix, "entitlements_role_capabilities", collections.BytesKey, collections.BoolValue),
 		UserRoles:          collections.NewMap(builder, entitlements.UserPrefix, "entitlements_user_roles", collections.PairKeyCodec(collections.BytesKey, collections.Uint64Key), collections.BoolValue),
 
 		accountKeeper:     accountKeeper,

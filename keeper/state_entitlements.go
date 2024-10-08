@@ -8,6 +8,7 @@ package keeper
 
 import (
 	"context"
+	"encoding/binary"
 	"slices"
 
 	"cosmossdk.io/collections"
@@ -80,13 +81,19 @@ func (k *Keeper) SetPublicCapability(ctx context.Context, method string, enabled
 func (k *Keeper) GetCapabilityRoles(ctx context.Context, method string) []entitlements.Role {
 	var roles []entitlements.Role
 
-	_ = k.RoleCapabilities.Walk(ctx, collections.NewPrefixedPairRange[string, uint64](method), func(key collections.Pair[string, uint64], enabled bool) (stop bool, err error) {
-		if enabled {
-			roles = append(roles, entitlements.Role(key.K2()))
-		}
+	itr, _ := k.RoleCapabilities.Iterate(ctx, new(collections.Range[[]byte]).Prefix([]byte(method)))
 
-		return false, nil
-	})
+	defer itr.Close()
+
+	for ; itr.Valid(); itr.Next() {
+		key, _ := itr.Key()
+		enabled, _ := itr.Value()
+
+		if enabled {
+			role := binary.BigEndian.Uint64(key[len(key)-8:])
+			roles = append(roles, entitlements.Role(role))
+		}
+	}
 
 	return roles
 }
@@ -94,10 +101,10 @@ func (k *Keeper) GetCapabilityRoles(ctx context.Context, method string) []entitl
 func (k *Keeper) GetAllCapabilityRoles(ctx context.Context) []entitlements.RoleCapability {
 	var capabilityRoles []entitlements.RoleCapability
 
-	_ = k.RoleCapabilities.Walk(ctx, nil, func(key collections.Pair[string, uint64], enabled bool) (stop bool, err error) {
+	_ = k.RoleCapabilities.Walk(ctx, nil, func(key []byte, enabled bool) (stop bool, err error) {
 		capabilityRoles = append(capabilityRoles, entitlements.RoleCapability{
-			Method:  key.K1(),
-			Role:    entitlements.Role(key.K2()),
+			Method:  string(key[:len(key)-8]),
+			Role:    entitlements.Role(binary.BigEndian.Uint64(key[len(key)-8:])),
 			Enabled: enabled,
 		})
 
@@ -108,7 +115,7 @@ func (k *Keeper) GetAllCapabilityRoles(ctx context.Context) []entitlements.RoleC
 }
 
 func (k *Keeper) SetRoleCapability(ctx context.Context, method string, role entitlements.Role, enabled bool) error {
-	return k.RoleCapabilities.Set(ctx, collections.Join(method, uint64(role)), enabled)
+	return k.RoleCapabilities.Set(ctx, entitlements.CapabilityRoleKey(method, role), enabled)
 }
 
 //
