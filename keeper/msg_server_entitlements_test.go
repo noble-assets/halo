@@ -319,7 +319,7 @@ func TestEntitlementsUserRoles(t *testing.T) {
 	tmp := k.UserRoles
 	k.UserRoles = collections.NewMap(
 		collections.NewSchemaBuilder(mocks.FailingStore(mocks.Set, utils.GetKVStore(ctx, types.ModuleName))),
-		entitlements.UserPrefix, "entitlements_user_roles", collections.PairKeyCodec(collections.BytesKey, collections.Uint64Key), collections.BoolValue,
+		entitlements.UserPrefix, "entitlements_user_roles", collections.BytesKey, collections.BoolValue,
 	)
 
 	// ACT: Attempt set user role with failing UserRoles collection store.

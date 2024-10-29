@@ -21,3 +21,9 @@ func CapabilityRoleKey(method string, role Role) []byte {
 	binary.BigEndian.PutUint64(bz, uint64(role))
 	return append([]byte(method), bz...)
 }
+
+func UserRoleKey(address []byte, role Role) []byte {
+	bz := make([]byte, 8)
+	binary.BigEndian.PutUint64(bz, uint64(role))
+	return append(address, bz...)
+}

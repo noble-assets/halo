@@ -120,16 +120,22 @@ func (k *Keeper) SetRoleCapability(ctx context.Context, method string, role enti
 
 //
 
-func (k *Keeper) GetUserRoles(ctx context.Context, user []byte) []entitlements.Role {
+func (k *Keeper) GetUserRoles(ctx context.Context, address []byte) []entitlements.Role {
 	var roles []entitlements.Role
 
-	_ = k.UserRoles.Walk(ctx, collections.NewPrefixedPairRange[[]byte, uint64](user), func(key collections.Pair[[]byte, uint64], enabled bool) (stop bool, err error) {
-		if enabled {
-			roles = append(roles, entitlements.Role(key.K2()))
-		}
+	itr, _ := k.UserRoles.Iterate(ctx, new(collections.Range[[]byte]).Prefix(address))
 
-		return false, nil
-	})
+	defer itr.Close()
+
+	for ; itr.Valid(); itr.Next() {
+		key, _ := itr.Key()
+		enabled, _ := itr.Value()
+
+		if enabled {
+			role := binary.BigEndian.Uint64(key[len(key)-8:])
+			roles = append(roles, entitlements.Role(role))
+		}
+	}
 
 	return roles
 }
@@ -137,11 +143,11 @@ func (k *Keeper) GetUserRoles(ctx context.Context, user []byte) []entitlements.R
 func (k *Keeper) GetAllUserRoles(ctx context.Context) []entitlements.UserRole {
 	var userRoles []entitlements.UserRole
 
-	_ = k.UserRoles.Walk(ctx, nil, func(key collections.Pair[[]byte, uint64], enabled bool) (stop bool, err error) {
-		address, _ := k.addressCodec.BytesToString(key.K1())
+	_ = k.UserRoles.Walk(ctx, nil, func(key []byte, enabled bool) (stop bool, err error) {
+		address, _ := k.addressCodec.BytesToString(key[:len(key)-8])
 		userRoles = append(userRoles, entitlements.UserRole{
 			User:    address,
-			Role:    entitlements.Role(key.K2()),
+			Role:    entitlements.Role(binary.BigEndian.Uint64(key[len(key)-8:])),
 			Enabled: enabled,
 		})
 
@@ -152,10 +158,10 @@ func (k *Keeper) GetAllUserRoles(ctx context.Context) []entitlements.UserRole {
 }
 
 func (k *Keeper) HasRole(ctx context.Context, address []byte, role entitlements.Role) bool {
-	enabled, _ := k.UserRoles.Get(ctx, collections.Join(address, uint64(role)))
+	enabled, _ := k.UserRoles.Get(ctx, entitlements.UserRoleKey(address, role))
 	return enabled
 }
 
 func (k *Keeper) SetUserRole(ctx context.Context, address []byte, role entitlements.Role, enabled bool) error {
-	return k.UserRoles.Set(ctx, collections.Join(address, uint64(role)), enabled)
+	return k.UserRoles.Set(ctx, entitlements.UserRoleKey(address, role), enabled)
 }
