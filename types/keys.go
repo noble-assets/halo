@@ -16,7 +16,3 @@ var (
 	OwnerKey    = []byte("owner")
 	NoncePrefix = []byte("nonce/")
 )
-
-func NonceKey(address []byte) []byte {
-	return append(NoncePrefix, address...)
-}
