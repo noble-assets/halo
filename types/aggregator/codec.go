@@ -14,13 +14,13 @@ import (
 )
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgReportBalance{}, "halo/aggregator/ReportBalance", nil)
+	cdc.RegisterConcrete(&MsgTransmit{}, "halo/aggregator/Transmit", nil)
 	cdc.RegisterConcrete(&MsgSetNextPrice{}, "halo/aggregator/SetNextPrice", nil)
 	cdc.RegisterConcrete(&MsgTransferOwnership{}, "halo/aggregator/TransferOwnership", nil)
 }
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgReportBalance{})
+	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgTransmit{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgSetNextPrice{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgTransferOwnership{})
 

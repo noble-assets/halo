@@ -33,8 +33,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ConsensusVersion defines the current x/halo module consensus version.
-const ConsensusVersion = 1
+// ConsensusVersion defines the current Halo module consensus version.
+const ConsensusVersion = 2
 
 var (
 	_ module.AppModuleBasic      = AppModule{}
@@ -97,13 +97,17 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncoding
 type AppModule struct {
 	AppModuleBasic
 
-	keeper *keeper.Keeper
+	keeper       *keeper.Keeper
+	storeService store.KVStoreService
+	cdc          codec.Codec
 }
 
-func NewAppModule(keeper *keeper.Keeper, addressCodec address.Codec) AppModule {
+func NewAppModule(keeper *keeper.Keeper, addressCodec address.Codec, storeService store.KVStoreService, cdc codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(addressCodec),
 		keeper:         keeper,
+		storeService:   storeService,
+		cdc:            cdc,
 	}
 }
 
@@ -134,6 +138,11 @@ func (m AppModule) RegisterServices(cfg module.Configurator) {
 
 	entitlements.RegisterMsgServer(cfg.MsgServer(), keeper.NewEntitlementsMsgServer(m.keeper))
 	entitlements.RegisterQueryServer(cfg.QueryServer(), keeper.NewEntitlementsQueryServer(m.keeper))
+
+	migrator := NewMigrator(m.keeper, m.storeService, m.cdc)
+	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
+		panic(fmt.Sprintf("failed to migrate Halo from version 1 to 2: %v", err))
+	}
 }
 
 //
@@ -190,7 +199,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.InterfaceRegistry,
 	)
-	m := NewAppModule(k, in.AddressCodec)
+	m := NewAppModule(k, in.AddressCodec, in.StoreService, in.Cdc)
 
 	return ModuleOutputs{Keeper: k, Module: m, Restrictions: k.SendRestrictionFn}
 }

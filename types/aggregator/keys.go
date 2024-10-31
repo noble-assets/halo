@@ -7,8 +7,8 @@
 package aggregator
 
 var (
-	OwnerKey       = []byte("aggregator/owner")
-	LastRoundIDKey = []byte("aggregator/last_round_id")
-	NextPriceKey   = []byte("aggregator/next_price")
-	RoundPrefix    = []byte("aggregator/round/")
+	ReporterKey     = []byte("aggregator/reporter")
+	LastRoundIDKey  = []byte("aggregator/last_round_id")
+	NextPricePrefix = []byte("aggregator/next_price/")
+	RoundPrefix     = []byte("aggregator/round/")
 )

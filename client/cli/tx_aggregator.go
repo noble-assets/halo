@@ -8,6 +8,7 @@ package cli
 
 import (
 	"errors"
+	"strconv"
 
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -26,50 +27,37 @@ func GetAggregatorTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(TxReportBalance())
+	cmd.AddCommand(TxTransmit())
 	cmd.AddCommand(TxSetNextPrice())
 	cmd.AddCommand(TxAggregatorTransferOwnership())
 
 	return cmd
 }
 
-func TxReportBalance() *cobra.Command {
+func TxTransmit() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "report-balance [principal] [interest] [total-supply] [next-price]",
-		Short: "Transfer ownership of submodule",
-		Args:  cobra.ExactArgs(4),
+		Use:  "transmit [answer] [updated-at]",
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			principal, ok := math.NewIntFromString(args[0])
+			answer, ok := math.NewIntFromString(args[0])
 			if !ok {
-				return errors.New("invalid principal")
+				return errors.New("invalid answer")
 			}
 
-			interest, ok := math.NewIntFromString(args[1])
-			if !ok {
-				return errors.New("invalid interest")
+			updatedAt, err := strconv.Atoi(args[1])
+			if err != nil {
+				return errors.New("invalid updated-at")
 			}
 
-			totalSupply, ok := math.NewIntFromString(args[2])
-			if !ok {
-				return errors.New("invalid total supply")
-			}
-
-			nextPrice, ok := math.NewIntFromString(args[3])
-			if !ok {
-				return errors.New("invalid next price")
-			}
-
-			msg := &aggregator.MsgReportBalance{
-				Signer:      clientCtx.GetFromAddress().String(),
-				Principal:   principal,
-				Interest:    interest,
-				TotalSupply: totalSupply,
-				NextPrice:   nextPrice,
+			msg := &aggregator.MsgTransmit{
+				Signer:    clientCtx.GetFromAddress().String(),
+				Answer:    answer,
+				UpdatedAt: uint32(updatedAt),
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
@@ -83,9 +71,8 @@ func TxReportBalance() *cobra.Command {
 
 func TxSetNextPrice() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set-next-price [next-price]",
-		Short: "Transfer ownership of submodule",
-		Args:  cobra.ExactArgs(1),
+		Use:  "set-next-price [next-price]",
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -113,7 +100,7 @@ func TxSetNextPrice() *cobra.Command {
 
 func TxAggregatorTransferOwnership() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "transfer-ownership [new-owner]",
+		Use:   "transfer-ownership [new-reporter]",
 		Short: "Transfer ownership of submodule",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -123,8 +110,8 @@ func TxAggregatorTransferOwnership() *cobra.Command {
 			}
 
 			msg := &aggregator.MsgTransferOwnership{
-				Signer:   clientCtx.GetFromAddress().String(),
-				NewOwner: args[0],
+				Signer:      clientCtx.GetFromAddress().String(),
+				NewReporter: args[0],
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)

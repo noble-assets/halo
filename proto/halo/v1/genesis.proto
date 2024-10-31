@@ -4,14 +4,14 @@ package halo.v1;
 
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "halo/aggregator/v1/genesis.proto";
+import "halo/aggregator/v2/genesis.proto";
 import "halo/entitlements/v1/genesis.proto";
 
 option go_package = "github.com/noble-assets/halo/v2/types";
 
 message GenesisState {
   // aggregator_state is the genesis state of the aggregator submodule.
-  aggregator.v1.GenesisState aggregator_state = 1 [(gogoproto.nullable) = false];
+  aggregator.v2.GenesisState aggregator_state = 1 [(gogoproto.nullable) = false];
   // entitlements_state is the genesis state of the entitlements submodule.
   entitlements.v1.GenesisState entitlements_state = 2 [(gogoproto.nullable) = false];
 

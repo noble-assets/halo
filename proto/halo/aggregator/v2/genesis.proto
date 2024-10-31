@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package halo.aggregator.v2;
+
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "halo/aggregator/v2/aggregator.proto";
+
+option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
+
+message GenesisState {
+  string reporter = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  uint64 last_round_id = 2;
+  map<uint64, RoundData> rounds = 3 [(gogoproto.nullable) = false];
+  map<uint64, string> next_prices = 4;
+}

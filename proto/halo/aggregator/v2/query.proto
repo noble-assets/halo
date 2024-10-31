@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package halo.aggregator.v2;
+
+import "cosmos/query/v1/query.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
+
+service Query {
+  rpc Reporter(QueryReporter) returns (QueryReporterResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/halo/aggregator/v2/reporter";
+    option (google.api.http).additional_bindings = {get: "/halo/aggregator/v1/owner"};
+  }
+
+  // TODO: Additional queries!
+}
+
+//
+
+message QueryReporter {}
+
+message QueryReporterResponse {
+  string reporter = 1;
+}
