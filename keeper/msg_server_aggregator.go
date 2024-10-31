@@ -23,109 +23,87 @@ func NewAggregatorMsgServer(keeper *Keeper) aggregator.MsgServer {
 	return &aggregatorMsgServer{Keeper: keeper}
 }
 
-func (k aggregatorMsgServer) ReportBalance(ctx context.Context, msg *aggregator.MsgReportBalance) (*aggregator.MsgReportBalanceResponse, error) {
-	_, err := k.EnsureOwner(ctx, msg.Signer)
+func (k aggregatorMsgServer) Transmit(ctx context.Context, msg *aggregator.MsgTransmit) (*aggregator.MsgTransmitResponse, error) {
+	_, err := k.EnsureReporter(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	balance := msg.Principal.Add(msg.Interest)
-
-	id, err := k.IncrementLastRoundId(ctx)
+	id, err := k.LastRoundId.Next(ctx)
 	if err != nil {
 		return nil, err
 	}
-	round, found := k.GetRound(ctx, id)
-	if found && round.Balance.Equal(balance) && round.Interest.Equal(msg.Interest) && round.Supply.Equal(msg.TotalSupply) {
-		return nil, aggregator.ErrAlreadyReported
+
+	round := aggregator.RoundData{
+		Answer:    msg.Answer,
+		UpdatedAt: msg.UpdatedAt,
 	}
 
-	id += 1
-	if _, found := k.GetRound(ctx, id); found {
-		return nil, aggregator.ErrAlreadyReported
-	}
-
-	answer := balance.MulRaw(1_000_000_000_000).Quo(msg.TotalSupply)
-	round = aggregator.RoundData{
-		Answer:    answer,
-		Balance:   balance,
-		Interest:  msg.Interest,
-		Supply:    msg.TotalSupply,
-		UpdatedAt: k.headerService.GetHeaderInfo(ctx).Time.Unix(),
-	}
-	if err = k.SetRound(ctx, id, round); err != nil {
+	if err = k.Rounds.Set(ctx, id, round); err != nil {
 		return nil, err
 	}
 
-	if !msg.NextPrice.IsPositive() || msg.NextPrice.LTE(answer) {
-		return nil, aggregator.ErrInvalidNextPrice
-	}
-	if err = k.Keeper.SetNextPrice(ctx, msg.NextPrice); err != nil {
-		return nil, err
-	}
-
-	_ = k.eventService.EventManager(ctx).Emit(ctx, &aggregator.BalanceReported{
+	return &aggregator.MsgTransmitResponse{RoundId: id}, k.eventService.EventManager(ctx).Emit(ctx, &aggregator.AnswerUpdated{
+		Current:   msg.Answer,
 		RoundId:   id,
-		Balance:   balance,
-		Interest:  msg.Interest,
-		Price:     answer,
-		UpdatedAt: k.headerService.GetHeaderInfo(ctx).Time.Unix(),
+		UpdatedAt: msg.UpdatedAt,
 	})
-	_ = k.eventService.EventManager(ctx).Emit(ctx, &aggregator.NextPriceReported{Price: msg.NextPrice})
-
-	return &aggregator.MsgReportBalanceResponse{
-		RoundId: id,
-	}, nil
 }
 
 func (k aggregatorMsgServer) SetNextPrice(ctx context.Context, msg *aggregator.MsgSetNextPrice) (*aggregator.MsgSetNextPriceResponse, error) {
-	_, err := k.EnsureOwner(ctx, msg.Signer)
+	_, err := k.EnsureReporter(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	if !msg.NextPrice.IsPositive() {
+	if msg.NextPrice.IsZero() {
 		return nil, aggregator.ErrInvalidNextPrice
 	}
 
-	if err = k.Keeper.SetNextPrice(ctx, msg.NextPrice); err != nil {
+	id, err := k.LastRoundId.Peek(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = k.NextPrices.Set(ctx, id, msg.NextPrice); err != nil {
 		return nil, err
 	}
 
 	return &aggregator.MsgSetNextPriceResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &aggregator.NextPriceReported{
-		Price: msg.NextPrice,
+		RoundId:   id,
+		NextPrice: msg.NextPrice,
 	})
 }
 
 func (k aggregatorMsgServer) TransferOwnership(ctx context.Context, msg *aggregator.MsgTransferOwnership) (*aggregator.MsgTransferOwnershipResponse, error) {
-	owner, err := k.EnsureOwner(ctx, msg.Signer)
+	reporter, err := k.EnsureReporter(ctx, msg.Signer)
 	if err != nil {
 		return nil, err
 	}
 
-	if msg.NewOwner == owner {
-		return nil, aggregator.ErrSameOwner
+	if msg.NewReporter == reporter {
+		return nil, aggregator.ErrSameReporter
 	}
 
-	if err = k.SetAggregatorOwner(ctx, msg.NewOwner); err != nil {
+	if err = k.Reporter.Set(ctx, msg.NewReporter); err != nil {
 		return nil, err
 	}
 
 	return &aggregator.MsgTransferOwnershipResponse{}, k.eventService.EventManager(ctx).Emit(ctx, &aggregator.OwnershipTransferred{
-		PreviousOwner: owner,
-		NewOwner:      msg.NewOwner,
+		PreviousReporter: reporter,
+		NewReporter:      msg.NewReporter,
 	})
 }
 
 //
 
-func (k aggregatorMsgServer) EnsureOwner(ctx context.Context, signer string) (string, error) {
-	owner := k.GetAggregatorOwner(ctx)
-	if owner == "" {
-		return "", aggregator.ErrNoOwner
+func (k aggregatorMsgServer) EnsureReporter(ctx context.Context, signer string) (string, error) {
+	reporter, _ := k.Reporter.Get(ctx)
+	if reporter == "" {
+		return "", aggregator.ErrNoReporter
 	}
-	if signer != owner {
-		return "", errors.Wrapf(aggregator.ErrInvalidOwner, "expected %s, got %s", owner, signer)
+	if signer != reporter {
+		return "", errors.Wrapf(aggregator.ErrInvalidReporter, "expected %s, got %s", reporter, signer)
 	}
-	return owner, nil
+	return reporter, nil
 }

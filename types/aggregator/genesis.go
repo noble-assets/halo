@@ -17,9 +17,9 @@ func DefaultGenesisState() GenesisState {
 }
 
 func (gs *GenesisState) Validate(cdc address.Codec) error {
-	if gs.Owner != "" {
-		if _, err := cdc.StringToBytes(gs.Owner); err != nil {
-			return fmt.Errorf("invalid aggregator owner address (%s): %s", gs.Owner, err)
+	if gs.Reporter != "" {
+		if _, err := cdc.StringToBytes(gs.Reporter); err != nil {
+			return fmt.Errorf("invalid reporter address (%s): %s", gs.Reporter, err)
 		}
 	}
 

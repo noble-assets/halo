@@ -16,20 +16,18 @@ import (
 )
 
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, cdc address.Codec, genesis types.GenesisState) {
-	if err := k.SetAggregatorOwner(ctx, genesis.AggregatorState.Owner); err != nil {
+	if err := k.Reporter.Set(ctx, genesis.AggregatorState.Reporter); err != nil {
 		panic(err)
 	}
 	if err := k.SetLastRoundId(ctx, genesis.AggregatorState.LastRoundId); err != nil {
 		panic(err)
 	}
-	if err := k.SetNextPrice(ctx, genesis.AggregatorState.NextPrice); err != nil {
-		panic(err)
-	}
 	for id, round := range genesis.AggregatorState.Rounds {
-		if err := k.SetRound(ctx, id, round); err != nil {
+		if err := k.Rounds.Set(ctx, id, round); err != nil {
 			panic(err)
 		}
 	}
+	// TODO: NextPrices
 
 	if err := k.SetEntitlementsOwner(ctx, genesis.EntitlementsState.Owner); err != nil {
 		panic(err)
@@ -63,12 +61,14 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, cdc address.Codec, genesis t
 }
 
 func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
+	reporter, _ := k.Reporter.Get(ctx)
+
 	return &types.GenesisState{
 		AggregatorState: aggregator.GenesisState{
-			Owner:       k.GetAggregatorOwner(ctx),
+			Reporter:    reporter,
 			LastRoundId: k.GetLastRoundId(ctx),
-			NextPrice:   k.GetNextPrice(ctx),
 			Rounds:      k.GetRounds(ctx),
+			// TODO: NextPrices
 		},
 		EntitlementsState: entitlements.GenesisState{
 			Owner:              k.GetEntitlementsOwner(ctx),

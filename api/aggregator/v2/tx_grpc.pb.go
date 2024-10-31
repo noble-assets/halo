@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             (unknown)
-// source: halo/aggregator/v1/tx.proto
+// source: halo/aggregator/v2/tx.proto
 
-package aggregatorv1
+package aggregatorv2
 
 import (
 	context "context"
@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Msg_ReportBalance_FullMethodName     = "/halo.aggregator.v1.Msg/ReportBalance"
-	Msg_SetNextPrice_FullMethodName      = "/halo.aggregator.v1.Msg/SetNextPrice"
-	Msg_TransferOwnership_FullMethodName = "/halo.aggregator.v1.Msg/TransferOwnership"
+	Msg_Transmit_FullMethodName          = "/halo.aggregator.v2.Msg/Transmit"
+	Msg_SetNextPrice_FullMethodName      = "/halo.aggregator.v2.Msg/SetNextPrice"
+	Msg_TransferOwnership_FullMethodName = "/halo.aggregator.v2.Msg/TransferOwnership"
 )
 
 // MsgClient is the client API for Msg service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	ReportBalance(ctx context.Context, in *MsgReportBalance, opts ...grpc.CallOption) (*MsgReportBalanceResponse, error)
+	Transmit(ctx context.Context, in *MsgTransmit, opts ...grpc.CallOption) (*MsgTransmitResponse, error)
 	SetNextPrice(ctx context.Context, in *MsgSetNextPrice, opts ...grpc.CallOption) (*MsgSetNextPriceResponse, error)
 	TransferOwnership(ctx context.Context, in *MsgTransferOwnership, opts ...grpc.CallOption) (*MsgTransferOwnershipResponse, error)
 }
@@ -41,10 +41,10 @@ func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) ReportBalance(ctx context.Context, in *MsgReportBalance, opts ...grpc.CallOption) (*MsgReportBalanceResponse, error) {
+func (c *msgClient) Transmit(ctx context.Context, in *MsgTransmit, opts ...grpc.CallOption) (*MsgTransmitResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(MsgReportBalanceResponse)
-	err := c.cc.Invoke(ctx, Msg_ReportBalance_FullMethodName, in, out, cOpts...)
+	out := new(MsgTransmitResponse)
+	err := c.cc.Invoke(ctx, Msg_Transmit_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (c *msgClient) TransferOwnership(ctx context.Context, in *MsgTransferOwners
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility.
 type MsgServer interface {
-	ReportBalance(context.Context, *MsgReportBalance) (*MsgReportBalanceResponse, error)
+	Transmit(context.Context, *MsgTransmit) (*MsgTransmitResponse, error)
 	SetNextPrice(context.Context, *MsgSetNextPrice) (*MsgSetNextPriceResponse, error)
 	TransferOwnership(context.Context, *MsgTransferOwnership) (*MsgTransferOwnershipResponse, error)
 	mustEmbedUnimplementedMsgServer()
@@ -88,8 +88,8 @@ type MsgServer interface {
 // pointer dereference when methods are called.
 type UnimplementedMsgServer struct{}
 
-func (UnimplementedMsgServer) ReportBalance(context.Context, *MsgReportBalance) (*MsgReportBalanceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReportBalance not implemented")
+func (UnimplementedMsgServer) Transmit(context.Context, *MsgTransmit) (*MsgTransmitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Transmit not implemented")
 }
 func (UnimplementedMsgServer) SetNextPrice(context.Context, *MsgSetNextPrice) (*MsgSetNextPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetNextPrice not implemented")
@@ -118,20 +118,20 @@ func RegisterMsgServer(s grpc.ServiceRegistrar, srv MsgServer) {
 	s.RegisterService(&Msg_ServiceDesc, srv)
 }
 
-func _Msg_ReportBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgReportBalance)
+func _Msg_Transmit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgTransmit)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).ReportBalance(ctx, in)
+		return srv.(MsgServer).Transmit(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_ReportBalance_FullMethodName,
+		FullMethod: Msg_Transmit_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ReportBalance(ctx, req.(*MsgReportBalance))
+		return srv.(MsgServer).Transmit(ctx, req.(*MsgTransmit))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -176,12 +176,12 @@ func _Msg_TransferOwnership_Handler(srv interface{}, ctx context.Context, dec fu
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "halo.aggregator.v1.Msg",
+	ServiceName: "halo.aggregator.v2.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ReportBalance",
-			Handler:    _Msg_ReportBalance_Handler,
+			MethodName: "Transmit",
+			Handler:    _Msg_Transmit_Handler,
 		},
 		{
 			MethodName: "SetNextPrice",
@@ -193,5 +193,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "halo/aggregator/v1/tx.proto",
+	Metadata: "halo/aggregator/v2/tx.proto",
 }

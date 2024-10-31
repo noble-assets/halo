@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package halo.aggregator.v1;
+package halo.aggregator.v2;
 
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
@@ -12,48 +12,31 @@ option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  rpc ReportBalance(MsgReportBalance) returns (MsgReportBalanceResponse);
+  rpc Transmit(MsgTransmit) returns (MsgTransmitResponse);
   rpc SetNextPrice(MsgSetNextPrice) returns (MsgSetNextPriceResponse);
   rpc TransferOwnership(MsgTransferOwnership) returns (MsgTransferOwnershipResponse);
 }
 
-// MsgReportBalance implements the reportBalance (0x0b50ece9) method.
-message MsgReportBalance {
+// MsgTransmit implements the transmit (0xTODO) method.
+message MsgTransmit {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name) = "halo/aggregator/ReportBalance";
+  option (amino.name) = "halo/aggregator/Transmit";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string principal = 2 [
+  string answer = 2 [
     (amino.dont_omitempty) = true,
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  string interest = 3 [
-    (amino.dont_omitempty) = true,
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
-  string total_supply = 4 [
-    (amino.dont_omitempty) = true,
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
-  string next_price = 5 [
-    (amino.dont_omitempty) = true,
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
+  uint32 updated_at = 3;
 }
 
-// MsgReportBalanceResponse ...
-message MsgReportBalanceResponse {
+// MsgTransmitResponse ...
+message MsgTransmitResponse {
   uint64 round_id = 1;
 }
 
@@ -86,7 +69,7 @@ message MsgTransferOwnership {
   option (gogoproto.goproto_getters) = false;
 
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-  string new_owner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string new_reporter = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 // MsgTransferOwnershipResponse ...
