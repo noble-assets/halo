@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## Unreleased
+## v2.0.0
+
+*Nov 10, 2024*
+
+Second release of the `x/halo` module, aligning it with the latest developments in Cosmos and Noble.
 
 ### DEPENDENCIES
 
