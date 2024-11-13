@@ -1,1 +1,1 @@
-- Switch entitlements method input to a query string. ([#12](https://github.com/noble-assets/halo/pull/12))
+- Switch entitlements method input to a query string. ([#13](https://github.com/noble-assets/halo/pull/13))
