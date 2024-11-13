@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v2.0.1
+
+*Nov 13, 2024*
+
+This is a non-consensus breaking patch to the `v2` release line.
+
+### BUG FIXES
+
+- Switch entitlements method input to a query string. ([#12](https://github.com/noble-assets/halo/pull/12))
+
 ## v2.0.0
 
 *Nov 10, 2024*

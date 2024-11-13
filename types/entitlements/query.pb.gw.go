@@ -69,26 +69,19 @@ func local_request_Query_Paused_0(ctx context.Context, marshaler runtime.Marshal
 
 }
 
+var (
+	filter_Query_PublicCapability_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_Query_PublicCapability_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryPublicCapability
 	var metadata runtime.ServerMetadata
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["method"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "method")
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	protoReq.Method, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "method", err)
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Query_PublicCapability_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.PublicCapability(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -100,22 +93,11 @@ func local_request_Query_PublicCapability_0(ctx context.Context, marshaler runti
 	var protoReq QueryPublicCapability
 	var metadata runtime.ServerMetadata
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["method"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "method")
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	protoReq.Method, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "method", err)
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Query_PublicCapability_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.PublicCapability(ctx, &protoReq)
@@ -123,26 +105,19 @@ func local_request_Query_PublicCapability_0(ctx context.Context, marshaler runti
 
 }
 
+var (
+	filter_Query_RoleCapability_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_Query_RoleCapability_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryRoleCapability
 	var metadata runtime.ServerMetadata
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["method"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "method")
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	protoReq.Method, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "method", err)
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Query_RoleCapability_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.RoleCapability(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -154,22 +129,11 @@ func local_request_Query_RoleCapability_0(ctx context.Context, marshaler runtime
 	var protoReq QueryRoleCapability
 	var metadata runtime.ServerMetadata
 
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["method"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "method")
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	protoReq.Method, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "method", err)
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_Query_RoleCapability_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.RoleCapability(ctx, &protoReq)
@@ -501,9 +465,9 @@ var (
 
 	pattern_Query_Paused_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"halo", "entitlements", "v1", "paused"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_PublicCapability_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"halo", "entitlements", "v1", "public_capability", "method"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_PublicCapability_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"halo", "entitlements", "v1", "public_capability"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_RoleCapability_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"halo", "entitlements", "v1", "role_capability", "method"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_RoleCapability_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"halo", "entitlements", "v1", "role_capability"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_UserCapability_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"halo", "entitlements", "v1", "user_capability", "address"}, "", runtime.AssumeColonVerbOpt(false)))
 )
