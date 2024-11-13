@@ -1,0 +1,1 @@
+- Switch entitlements method input to a query string. ([#13](https://github.com/noble-assets/halo/pull/13))

@@ -21,12 +21,12 @@ service Query {
 
   rpc PublicCapability(QueryPublicCapability) returns (QueryPublicCapabilityResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/halo/entitlements/v1/public_capability/{method}";
+    option (google.api.http).get = "/halo/entitlements/v1/public_capability";
   }
 
   rpc RoleCapability(QueryRoleCapability) returns (QueryRoleCapabilityResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/halo/entitlements/v1/role_capability/{method}";
+    option (google.api.http).get = "/halo/entitlements/v1/role_capability";
   }
 
   rpc UserCapability(QueryUserCapability) returns (QueryUserCapabilityResponse) {
