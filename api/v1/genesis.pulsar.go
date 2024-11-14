@@ -6,8 +6,8 @@ import (
 	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/gogoproto/gogoproto"
-	v1 "github.com/noble-assets/halo/v2/api/aggregator/v1"
-	v11 "github.com/noble-assets/halo/v2/api/entitlements/v1"
+	v2 "github.com/noble-assets/halo/v2/api/aggregator/v2"
+	v1 "github.com/noble-assets/halo/v2/api/entitlements/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -304,9 +304,9 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "halo.v1.GenesisState.aggregator_state":
-		x.AggregatorState = value.Message().Interface().(*v1.GenesisState)
+		x.AggregatorState = value.Message().Interface().(*v2.GenesisState)
 	case "halo.v1.GenesisState.entitlements_state":
-		x.EntitlementsState = value.Message().Interface().(*v11.GenesisState)
+		x.EntitlementsState = value.Message().Interface().(*v1.GenesisState)
 	case "halo.v1.GenesisState.owner":
 		x.Owner = value.Interface().(string)
 	case "halo.v1.GenesisState.nonces":
@@ -335,12 +335,12 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 	switch fd.FullName() {
 	case "halo.v1.GenesisState.aggregator_state":
 		if x.AggregatorState == nil {
-			x.AggregatorState = new(v1.GenesisState)
+			x.AggregatorState = new(v2.GenesisState)
 		}
 		return protoreflect.ValueOfMessage(x.AggregatorState.ProtoReflect())
 	case "halo.v1.GenesisState.entitlements_state":
 		if x.EntitlementsState == nil {
-			x.EntitlementsState = new(v11.GenesisState)
+			x.EntitlementsState = new(v1.GenesisState)
 		}
 		return protoreflect.ValueOfMessage(x.EntitlementsState.ProtoReflect())
 	case "halo.v1.GenesisState.nonces":
@@ -365,10 +365,10 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "halo.v1.GenesisState.aggregator_state":
-		m := new(v1.GenesisState)
+		m := new(v2.GenesisState)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "halo.v1.GenesisState.entitlements_state":
-		m := new(v11.GenesisState)
+		m := new(v1.GenesisState)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "halo.v1.GenesisState.owner":
 		return protoreflect.ValueOfString("")
@@ -661,7 +661,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.AggregatorState == nil {
-					x.AggregatorState = &v1.GenesisState{}
+					x.AggregatorState = &v2.GenesisState{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.AggregatorState); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -697,7 +697,7 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				if x.EntitlementsState == nil {
-					x.EntitlementsState = &v11.GenesisState{}
+					x.EntitlementsState = &v1.GenesisState{}
 				}
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.EntitlementsState); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
@@ -902,9 +902,9 @@ type GenesisState struct {
 	unknownFields protoimpl.UnknownFields
 
 	// aggregator_state is the genesis state of the aggregator submodule.
-	AggregatorState *v1.GenesisState `protobuf:"bytes,1,opt,name=aggregator_state,json=aggregatorState,proto3" json:"aggregator_state,omitempty"`
+	AggregatorState *v2.GenesisState `protobuf:"bytes,1,opt,name=aggregator_state,json=aggregatorState,proto3" json:"aggregator_state,omitempty"`
 	// entitlements_state is the genesis state of the entitlements submodule.
-	EntitlementsState *v11.GenesisState `protobuf:"bytes,2,opt,name=entitlements_state,json=entitlementsState,proto3" json:"entitlements_state,omitempty"`
+	EntitlementsState *v1.GenesisState `protobuf:"bytes,2,opt,name=entitlements_state,json=entitlementsState,proto3" json:"entitlements_state,omitempty"`
 	// owner is the address that can control this module.
 	Owner string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
 	// nonces contains the withdrawal nonce per user.
@@ -931,14 +931,14 @@ func (*GenesisState) Descriptor() ([]byte, []int) {
 	return file_halo_v1_genesis_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GenesisState) GetAggregatorState() *v1.GenesisState {
+func (x *GenesisState) GetAggregatorState() *v2.GenesisState {
 	if x != nil {
 		return x.AggregatorState
 	}
 	return nil
 }
 
-func (x *GenesisState) GetEntitlementsState() *v11.GenesisState {
+func (x *GenesisState) GetEntitlementsState() *v1.GenesisState {
 	if x != nil {
 		return x.EntitlementsState
 	}
@@ -968,14 +968,14 @@ var file_halo_v1_genesis_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67,
 	0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x20, 0x68, 0x61, 0x6c, 0x6f, 0x2f, 0x61, 0x67, 0x67, 0x72, 0x65, 0x67, 0x61, 0x74,
-	0x6f, 0x72, 0x2f, 0x76, 0x31, 0x2f, 0x67, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x2e, 0x70, 0x72,
+	0x6f, 0x72, 0x2f, 0x76, 0x32, 0x2f, 0x67, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x22, 0x68, 0x61, 0x6c, 0x6f, 0x2f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x6c,
 	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x67, 0x65, 0x6e, 0x65, 0x73, 0x69,
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xe0, 0x02, 0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65,
 	0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x51, 0x0a, 0x10, 0x61, 0x67, 0x67, 0x72,
 	0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x20, 0x2e, 0x68, 0x61, 0x6c, 0x6f, 0x2e, 0x61, 0x67, 0x67, 0x72, 0x65, 0x67,
-	0x61, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53,
+	0x61, 0x74, 0x6f, 0x72, 0x2e, 0x76, 0x32, 0x2e, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53,
 	0x74, 0x61, 0x74, 0x65, 0x42, 0x04, 0xc8, 0xde, 0x1f, 0x00, 0x52, 0x0f, 0x61, 0x67, 0x67, 0x72,
 	0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x57, 0x0a, 0x12, 0x65,
 	0x6e, 0x74, 0x69, 0x74, 0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x73, 0x5f, 0x73, 0x74, 0x61, 0x74,
@@ -1020,13 +1020,13 @@ func file_halo_v1_genesis_proto_rawDescGZIP() []byte {
 
 var file_halo_v1_genesis_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_halo_v1_genesis_proto_goTypes = []interface{}{
-	(*GenesisState)(nil),     // 0: halo.v1.GenesisState
-	nil,                      // 1: halo.v1.GenesisState.NoncesEntry
-	(*v1.GenesisState)(nil),  // 2: halo.aggregator.v1.GenesisState
-	(*v11.GenesisState)(nil), // 3: halo.entitlements.v1.GenesisState
+	(*GenesisState)(nil),    // 0: halo.v1.GenesisState
+	nil,                     // 1: halo.v1.GenesisState.NoncesEntry
+	(*v2.GenesisState)(nil), // 2: halo.aggregator.v2.GenesisState
+	(*v1.GenesisState)(nil), // 3: halo.entitlements.v1.GenesisState
 }
 var file_halo_v1_genesis_proto_depIdxs = []int32{
-	2, // 0: halo.v1.GenesisState.aggregator_state:type_name -> halo.aggregator.v1.GenesisState
+	2, // 0: halo.v1.GenesisState.aggregator_state:type_name -> halo.aggregator.v2.GenesisState
 	3, // 1: halo.v1.GenesisState.entitlements_state:type_name -> halo.entitlements.v1.GenesisState
 	1, // 2: halo.v1.GenesisState.nonces:type_name -> halo.v1.GenesisState.NoncesEntry
 	3, // [3:3] is the sub-list for method output_type

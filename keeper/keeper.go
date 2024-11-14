@@ -38,10 +38,10 @@ type Keeper struct {
 	Owner  collections.Item[string]
 	Nonces collections.Map[[]byte, uint64]
 
-	AggregatorOwner collections.Item[string]
-	LastRoundId     collections.Sequence
-	NextPrice       collections.Item[math.Int]
-	Rounds          collections.Map[uint64, aggregator.RoundData]
+	Reporter    collections.Item[string]
+	LastRoundId collections.Sequence
+	Rounds      collections.Map[uint64, aggregator.RoundData]
+	NextPrices  collections.Map[uint64, math.Int]
 
 	EntitlementsOwner  collections.Item[string]
 	Paused             collections.Item[bool]
@@ -81,10 +81,10 @@ func NewKeeper(
 		Owner:  collections.NewItem(builder, types.OwnerKey, "owner", collections.StringValue),
 		Nonces: collections.NewMap(builder, types.NoncePrefix, "nonces", collections.BytesKey, collections.Uint64Value),
 
-		AggregatorOwner: collections.NewItem(builder, aggregator.OwnerKey, "aggregator_owner", collections.StringValue),
-		LastRoundId:     collections.NewSequence(builder, aggregator.LastRoundIDKey, "aggregator_last_round_id"),
-		NextPrice:       collections.NewItem(builder, aggregator.NextPriceKey, "aggregator_next_price", sdk.IntValue),
-		Rounds:          collections.NewMap(builder, aggregator.RoundPrefix, "aggregator_rounds", collections.Uint64Key, codec.CollValue[aggregator.RoundData](cdc)),
+		Reporter:    collections.NewItem(builder, aggregator.ReporterKey, "aggregator_reporter", collections.StringValue),
+		LastRoundId: collections.NewSequence(builder, aggregator.LastRoundIDKey, "aggregator_last_round_id"),
+		Rounds:      collections.NewMap(builder, aggregator.RoundPrefix, "aggregator_rounds", collections.Uint64Key, codec.CollValue[aggregator.RoundData](cdc)),
+		NextPrices:  collections.NewMap(builder, aggregator.NextPricePrefix, "aggregator_next_prices", collections.Uint64Key, sdk.IntValue),
 
 		EntitlementsOwner:  collections.NewItem(builder, entitlements.OwnerKey, "entitlements_owner", collections.StringValue),
 		Paused:             collections.NewItem(builder, entitlements.PausedKey, "entitlements_paused", collections.BoolValue),
@@ -192,8 +192,8 @@ func (k *Keeper) mintCoins(ctx context.Context, recipient sdk.AccAddress, coins 
 // depositFor is an internal helper function to deposit.
 func (k *Keeper) depositFor(ctx context.Context, signer sdk.AccAddress, recipient sdk.AccAddress, underlying math.Int) (amount math.Int, err error) {
 	lastRoundId := k.GetLastRoundId(ctx)
-	round, found := k.GetRound(ctx, lastRoundId)
-	if !found {
+	round, err := k.Rounds.Get(ctx, lastRoundId)
+	if err != nil {
 		return math.Int{}, fmt.Errorf("round %d not found", lastRoundId)
 	}
 	amount = underlying.QuoRaw(10000).MulRaw(10000)
@@ -219,8 +219,8 @@ func (k *Keeper) depositFor(ctx context.Context, signer sdk.AccAddress, recipien
 // withdrawTo is an internal helper function to withdraw.
 func (k *Keeper) withdrawTo(ctx context.Context, signer sdk.AccAddress, recipient sdk.AccAddress, amount math.Int) (underlying math.Int, err error) {
 	lastRoundId := k.GetLastRoundId(ctx)
-	round, found := k.GetRound(ctx, lastRoundId)
-	if !found {
+	round, err := k.Rounds.Get(ctx, lastRoundId)
+	if err != nil {
 		return math.Int{}, fmt.Errorf("round %d not found", lastRoundId)
 	}
 	underlying = amount.Mul(round.Answer).QuoRaw(100000000)

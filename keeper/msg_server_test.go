@@ -60,11 +60,8 @@ func TestDeposit(t *testing.T) {
 	require.NoError(t, err)
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	err = k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
-		Balance:   math.NewInt(7016169453),
-		Interest:  math.NewInt(1005815),
-		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	require.NoError(t, err)
@@ -165,11 +162,8 @@ func TestDepositFor(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	err = k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
-		Balance:   math.NewInt(7016169453),
-		Interest:  math.NewInt(1005815),
-		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	require.NoError(t, err)
@@ -232,11 +226,8 @@ func TestDepositForWithRestrictions(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #229.
 	// https://etherscan.io/tx/0xcff68ffc6f79afadf835f559f8a51ed7092bc679d2a4f34cd153ef321d6bc8ec
-	err = k.SetRound(ctx, 229, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 229, aggregator.RoundData{
 		Answer:    math.NewInt(104572478),
-		Balance:   math.NewInt(7016169453),
-		Interest:  math.NewInt(1005815),
-		Supply:    math.NewInt(67093843285741),
 		UpdatedAt: 1717153499,
 	})
 	require.NoError(t, err)
@@ -333,11 +324,8 @@ func TestWithdraw(t *testing.T) {
 	require.NoError(t, err)
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	err = k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
-		Balance:   math.NewInt(4986480452),
-		Interest:  math.NewInt(708258),
-		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	require.NoError(t, err)
@@ -529,11 +517,8 @@ func TestWithdrawTo(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	err = k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
-		Balance:   math.NewInt(4986480452),
-		Interest:  math.NewInt(708258),
-		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	require.NoError(t, err)
@@ -662,11 +647,8 @@ func TestWithdrawToAdmin(t *testing.T) {
 
 	// ARRANGE: Report Ethereum Round #139.
 	// https://etherscan.io/tx/0x9095266d81856a28b80c4500228ab994197652fc4ad1c05cd4345d1454fccfd7
-	err = k.SetRound(ctx, 139, aggregator.RoundData{
+	err = k.Rounds.Set(ctx, 139, aggregator.RoundData{
 		Answer:    math.NewInt(102847997),
-		Balance:   math.NewInt(4986480452),
-		Interest:  math.NewInt(708258),
-		Supply:    math.NewInt(48483293336746),
 		UpdatedAt: 1706011979,
 	})
 	require.NoError(t, err)
