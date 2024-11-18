@@ -1,0 +1,1 @@
+- Update module path for v3 release line. ([#14](https://github.com/noble-assets/halo/pull/14))
