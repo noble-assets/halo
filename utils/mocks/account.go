@@ -9,7 +9,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/noble-assets/halo/v2/types"
+	"github.com/noble-assets/halo/v3/types"
 
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"

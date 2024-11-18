@@ -21,9 +21,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/v2/types"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	"github.com/noble-assets/halo/v3/types"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 )
 
 type Keeper struct {

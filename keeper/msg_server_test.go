@@ -15,12 +15,12 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/noble-assets/halo/v2/keeper"
-	"github.com/noble-assets/halo/v2/types"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/types/entitlements"
-	"github.com/noble-assets/halo/v2/utils"
-	"github.com/noble-assets/halo/v2/utils/mocks"
+	"github.com/noble-assets/halo/v3/keeper"
+	"github.com/noble-assets/halo/v3/types"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/entitlements"
+	"github.com/noble-assets/halo/v3/utils"
+	"github.com/noble-assets/halo/v3/utils/mocks"
 	"github.com/stretchr/testify/require"
 )
 

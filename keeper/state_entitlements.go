@@ -12,7 +12,7 @@ import (
 	"slices"
 
 	"cosmossdk.io/collections"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 )
 
 func (k *Keeper) CanCall(ctx context.Context, user []byte, method string) bool {

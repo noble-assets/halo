@@ -11,7 +11,7 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/noble-assets/halo/v2/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/aggregator"
 )
 
 var _ aggregator.QueryServer = &aggregatorQueryServer{}

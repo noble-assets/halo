@@ -24,12 +24,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	modulev1 "github.com/noble-assets/halo/v2/api/module/v1"
-	"github.com/noble-assets/halo/v2/client/cli"
-	"github.com/noble-assets/halo/v2/keeper"
-	"github.com/noble-assets/halo/v2/types"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	modulev1 "github.com/noble-assets/halo/v3/api/module/v1"
+	"github.com/noble-assets/halo/v3/client/cli"
+	"github.com/noble-assets/halo/v3/keeper"
+	"github.com/noble-assets/halo/v3/types"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 	"github.com/spf13/cobra"
 )
 

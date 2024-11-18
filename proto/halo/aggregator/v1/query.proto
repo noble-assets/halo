@@ -8,7 +8,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 
-option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
+option go_package = "github.com/noble-assets/halo/v3/types/aggregator";
 
 service Query {
   rpc Owner(QueryOwner) returns (QueryOwnerResponse) {

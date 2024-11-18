@@ -12,7 +12,7 @@ import (
 	"cosmossdk.io/errors"
 	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/noble-assets/halo/v2/types"
+	"github.com/noble-assets/halo/v3/types"
 )
 
 var _ types.QueryServer = &queryServer{}

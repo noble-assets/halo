@@ -12,8 +12,8 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/v2/simapp"
-	"github.com/noble-assets/halo/v2/simapp/simd/cmd"
+	"github.com/noble-assets/halo/v3/simapp"
+	"github.com/noble-assets/halo/v3/simapp/simd/cmd"
 )
 
 var (

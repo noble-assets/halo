@@ -1,4 +1,4 @@
-module github.com/noble-assets/halo/v2/simapp
+module github.com/noble-assets/halo/v3/simapp
 
 go 1.22
 
@@ -12,7 +12,7 @@ require (
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.10
-	github.com/noble-assets/halo/v2 v2.0.0
+	github.com/noble-assets/halo/v3 v3.0.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
@@ -164,7 +164,7 @@ require (
 
 replace (
 	// use local noble-assets/halo
-	github.com/noble-assets/halo/v2 => ../
+	github.com/noble-assets/halo/v3 => ../
 
 	// use cosmos compatible syndtr/goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7

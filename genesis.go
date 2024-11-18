@@ -9,10 +9,10 @@ package halo
 import (
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/noble-assets/halo/v2/keeper"
-	"github.com/noble-assets/halo/v2/types"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	"github.com/noble-assets/halo/v3/keeper"
+	"github.com/noble-assets/halo/v3/types"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 )
 
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, cdc address.Codec, genesis types.GenesisState) {

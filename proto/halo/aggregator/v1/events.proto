@@ -6,7 +6,7 @@ import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/noble-assets/halo/v2/types/aggregator";
+option go_package = "github.com/noble-assets/halo/v3/types/aggregator";
 
 message BalanceReported {
   uint64 round_id = 1;
