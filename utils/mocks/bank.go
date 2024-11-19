@@ -10,7 +10,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/noble-assets/halo/v2/types"
+	"github.com/noble-assets/halo/v3/types"
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"

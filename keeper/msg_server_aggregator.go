@@ -10,7 +10,7 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	"github.com/noble-assets/halo/v2/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/aggregator"
 )
 
 var _ aggregator.MsgServer = &aggregatorMsgServer{}

@@ -6,7 +6,7 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "halo/entitlements/v1/entitlements.proto";
 
-option go_package = "github.com/noble-assets/halo/v2/types/entitlements";
+option go_package = "github.com/noble-assets/halo/v3/types/entitlements";
 
 message GenesisState {
   string owner = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];

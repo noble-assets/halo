@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/noble-assets/halo/v2/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/aggregator"
 	"github.com/spf13/cobra"
 )
 

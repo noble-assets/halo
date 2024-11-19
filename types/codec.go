@@ -11,8 +11,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 )
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {

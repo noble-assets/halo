@@ -30,7 +30,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/bank"
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"
 	_ "github.com/cosmos/cosmos-sdk/x/staking"
-	_ "github.com/noble-assets/halo/v2"
+	_ "github.com/noble-assets/halo/v3"
 
 	// Cosmos Modules
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -40,7 +40,7 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	// Custom Modules
-	halokeeper "github.com/noble-assets/halo/v2/keeper"
+	halokeeper "github.com/noble-assets/halo/v3/keeper"
 )
 
 var DefaultNodeHome string

@@ -10,7 +10,7 @@ import (
 	"context"
 
 	"cosmossdk.io/math"
-	"github.com/noble-assets/halo/v2/types/aggregator"
+	"github.com/noble-assets/halo/v3/types/aggregator"
 )
 
 //

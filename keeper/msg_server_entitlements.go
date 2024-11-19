@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/errors"
-	"github.com/noble-assets/halo/v2/types/entitlements"
+	"github.com/noble-assets/halo/v3/types/entitlements"
 )
 
 var _ entitlements.MsgServer = &entitlementsMsgServer{}

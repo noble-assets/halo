@@ -6,7 +6,7 @@ import "cosmos/app/v1alpha1/module.proto";
 
 // Module is the config object of the Halo module.
 message Module {
-  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/noble-assets/halo"};
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/noble-assets/halo/v3"};
 
   // denom is the denom this module is allowed to govern, burn, mint, etc.
   string denom = 1;

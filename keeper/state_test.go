@@ -9,8 +9,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/noble-assets/halo/v2/utils"
-	"github.com/noble-assets/halo/v2/utils/mocks"
+	"github.com/noble-assets/halo/v3/utils"
+	"github.com/noble-assets/halo/v3/utils/mocks"
 	"github.com/stretchr/testify/require"
 )
 

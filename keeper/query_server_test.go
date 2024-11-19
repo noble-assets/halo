@@ -10,10 +10,10 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/noble-assets/halo/v2/keeper"
-	"github.com/noble-assets/halo/v2/types"
-	"github.com/noble-assets/halo/v2/utils"
-	"github.com/noble-assets/halo/v2/utils/mocks"
+	"github.com/noble-assets/halo/v3/keeper"
+	"github.com/noble-assets/halo/v3/types"
+	"github.com/noble-assets/halo/v3/utils"
+	"github.com/noble-assets/halo/v3/utils/mocks"
 	"github.com/stretchr/testify/require"
 )
 

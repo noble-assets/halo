@@ -8,8 +8,8 @@ package data
 
 import (
 	"cosmossdk.io/math"
-	"github.com/noble-assets/halo/v2/types/aggregator"
-	"github.com/noble-assets/halo/v2/utils"
+	"github.com/noble-assets/halo/v3/types/aggregator"
+	"github.com/noble-assets/halo/v3/utils"
 )
 
 var EthereumRounds = []struct {

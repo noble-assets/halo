@@ -1,4 +1,4 @@
-module github.com/noble-assets/halo/v2
+module github.com/noble-assets/halo/v3
 
 go 1.22
 
